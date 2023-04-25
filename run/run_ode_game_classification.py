@@ -7,11 +7,12 @@ import os
 from tqdm import tqdm
 
 
-main_path = os.path.split(os.getcwd())[0] + '/Epidemiology_behavior_dynamics'
+main_path = os.path.split(os.getcwd())[0] + '/Epidemiology_Behavior_Games'
 config_path = main_path + '/config.csv'
 config_data = pd.read_csv(config_path, sep=',', header=None, index_col=0)
 
 results_path = config_data.loc['results_dir'][1]
+
 
 ##
 def classify_game(R: float, S: float, T: float, P: float):

@@ -88,7 +88,7 @@ for idx, r in tqdm(df_param_run.iterrows()):
         os.makedirs(os.path.join(results_path, str(num_nodes), args.type_sim, args.network_type, 'checkpoints'))
 
     path_to_save_checkpoints = os.path.join(results_path, str(num_nodes), args.type_sim, args.network_type, 'checkpoints', 'beta_{}_sigma_{}'.format(r['beta_key'], r['sigma_key'])+'.csv' )
-    path_to_save_response    = os.path.join(results_path, str(num_nodes), args.type_sim, args.network_type, 'dynamics_beta_{}_sigma_{}'.format(r['beta_key'], r['sigma_key']) +'.csv')
+    path_to_save_response = os.path.join(results_path, str(num_nodes), args.type_sim, args.network_type, 'dynamics_beta_{}_sigma_{}'.format(r['beta_key'], r['sigma_key']) +'.csv')
 
     if os.path.exists(path_to_save_response):
         continue

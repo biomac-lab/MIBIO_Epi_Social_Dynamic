@@ -7,7 +7,7 @@ import networkx as nx
 import seaborn as sns
 import matplotlib.pyplot as plt
 from tqdm import tqdm
-from models import sis_replicator
+#from models import sis_replicator
 from models.get_clusters import get_partition, cluster_dynamics
 assert cf
 
