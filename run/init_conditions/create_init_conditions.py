@@ -2,8 +2,8 @@ import random
 import os
 import pandas as pd
 import numpy as np
-
 import argparse 
+import sys
 
 parser = argparse.ArgumentParser(description='Network simulations.')
 
@@ -16,7 +16,6 @@ args = parser.parse_args()
 
 IC = pd.DataFrame(columns =['ic_index', 'I', 'D'])
 
-import sys
 sys.path.append('../')
 
 main_path = os.path.split(os.getcwd())[0] + '/Epidemiology_behavior_dynamics'

@@ -25,7 +25,7 @@ parser.add_argument('--max_time', default=150,type=int,
 
 args = parser.parse_args()
 
-main_path = os.path.split(os.getcwd())[0] + '/Epidemiology_behavior_dynamics'
+main_path = os.path.split(os.getcwd())[0] + '/Epi_Social_Dynamic'
 config_path = main_path + '/config.csv'
 config_data = pd.read_csv(config_path, sep=',', header=None, index_col=0)
 

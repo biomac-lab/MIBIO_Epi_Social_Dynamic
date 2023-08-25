@@ -1,0 +1,7 @@
+value,beta,sigmaD,sigmaC
+min,0,0,0
+max,1,1,1
+num,25,25,25
+low,0.3,0.3,0.3
+mean,0.5,0.5,0.5
+high,0.7,0.7,0.7
