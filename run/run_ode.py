@@ -57,7 +57,7 @@ def run_sims_SIS_replicator(prob_infect, sigmaD, sigmaC:float=0, everything_dyna
 
     y0 = [S/N, I/N, C, D]
 
-    t_max = 200
+    t_max = 300
     t = np.linspace(0, t_max, t_max*5)
 
     gamma = 1/7
