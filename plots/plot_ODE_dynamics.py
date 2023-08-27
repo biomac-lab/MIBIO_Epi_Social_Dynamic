@@ -45,7 +45,7 @@ def graph_1D_experimentation(param_search, param_name:str):
         Ioscillations_[idx1] = count_oscillations(np.array(df_temp[['I']])[:,0])
         Doscillations_[idx1] = count_oscillations(np.array(df_temp[['D']])[:,0])
 
-    fig, ax = plt.subplots(2, 3, figsize=(10,10))
+    fig, ax = plt.subplots(2, 3, figsize=(14,10))
 
     ax[0,0].plot(param_search, Imax_)
     ax[0,0].set_title('Max. Infected')

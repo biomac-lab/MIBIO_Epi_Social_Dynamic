@@ -101,7 +101,7 @@ sigmaC_ = df_parametric[['sigmaC']]
 list_values = ['low', 'mean', 'high']
 
 for idx1, val1 in enumerate(list_values):
-    fig, ax = plt.subplots(3,3, figsize=(10,10))
+    fig, ax = plt.subplots(3,3, figsize=(14,10))
     beta_temp = beta_.loc[val1][0]
     plt.suptitle(f'beta = {beta_temp}$')
     for idx2, val2 in enumerate(list_values):
