@@ -122,6 +122,7 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #axes[0,0].set_yticklabels(param_ticks1)
     axes[0,0].set_title('Final Infected', y=-0.1)
     axes[0,0].set_ylabel(f'{param_name1}')
+    plt.setp(axes[0,0].get_xticklabels(), ha='left')
     plt.colorbar(im1, fraction=0.045, pad=0.05, ax=axes[0,0])
 
     #axes[1,0].set_xticks(range(len(param_ticks2)))
@@ -131,6 +132,7 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #axes[1,0].set_title('Final Defectors', y=-0.1)
     axes[1,0].set_ylabel(f'{param_name1}')
     axes[1,0].set_xlabel(f'{param_name2}')
+    plt.setp(axes[1,0].get_xticklabels(), ha='left')
     plt.colorbar(im2, fraction=0.045, pad=0.05, ax=axes[1,0])
     
     #axes[0,1].set_xticks(range(len(param_ticks2)))
@@ -138,6 +140,7 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #axes[0,1].set_xticklabels(param_ticks2)
     #axes[0,1].set_yticklabels(param_ticks1)
     axes[0,1].set_title('Max. Infected', y=-0.1)
+    plt.setp(axes[0,1].get_xticklabels(), ha='left')
     plt.colorbar(im3, fraction=0.045, pad=0.05, ax=axes[0,1])
 
     #axes[1,1].set_xticks(range(len(param_ticks2)))
@@ -146,6 +149,7 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #axes[1,1].set_yticklabels(param_ticks1)
     axes[1,1].set_title('Max. Infected Time', y=-0.1)
     axes[1,1].set_xlabel(f'{param_name2}')
+    plt.setp(axes[1,1].get_xticklabels(), ha='left')
     plt.colorbar(im4, fraction=0.045, pad=0.05, ax=axes[1,1])
 
     #axes[0,2].set_xticks(range(len(param_ticks2)))
@@ -153,6 +157,7 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #axes[0,2].set_xticklabels(param_ticks2)
     #axes[0,2].set_yticklabels(param_ticks1)
     axes[0,2].set_title('# Peaks of Infected', y=-0.1)
+    plt.setp(axes[0,2].get_xticklabels(), ha='left')
     plt.colorbar(im5, fraction=0.045, pad=0.05, ax=axes[0,2])
 
     #axes[1,2].set_xticks(range(len(param_ticks2)))
@@ -161,11 +166,15 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #axes[1,2].set_yticklabels(param_ticks1)
     axes[1,2].set_title('# Peaks of Defectors', y=-0.1)
     axes[1,2].set_xlabel(f'{param_name2}')
+    plt.setp(axes[1,2].get_xticklabels(), ha='left')
     plt.colorbar(im6, fraction=0.045, pad=0.05, ax=axes[1,2])
+
+    fig.tight_layout()
 
     if not os.path.isdir( os.path.join(results_path, plots_path, '2D') ):
                 os.makedirs(os.path.join(results_path, plots_path, '2D'))
     
+
     plt.savefig(os.path.join(results_path, plots_path, '2D','heatmap_features_{}_{}_exp.jpeg'.format(param_name1,param_name2)))
     plt.close()
 
