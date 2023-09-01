@@ -80,11 +80,103 @@ def graph_1D_experimentation(param_search, param_name:str):
     plt.savefig(os.path.join(results_path, plots_path, '1D','plot_features_{}_exp.jpeg'.format(param_name)))
     plt.close()
 
+def graph_2D_experimentation(param_search1, param_search2, param_name1: str, param_name2: str):
+    Imax_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
+    Tmax_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
+    Ifinal_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
+    Dfinal_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
+    Ioscillations_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
+    Doscillations_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
+
+    param_ticks1 = np.linspace(param_search1[0], param_search1[-1], 6)
+    param_ticks2 = np.linspace(param_search2[0], param_search2[-1], 6)
+
+    for idx1, p1 in enumerate(param_search1):
+        df_temp = df_parametric[[param_name1]]
+        param_search1 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
+
+        for idx2, p2 in enumerate(param_search2):
+            path_to_results = os.path.join(results_path, 'ode_results', '2D', 'ode_replicator_{}_{:0.2f}_{}_{:0.2f}'.format(param_name1, p1, param_name2, p2)+'.csv')
+            df_temp = pd.read_csv(path_to_results, index_col=0)
+
+            Imax_[idx1, idx2] = np.max(df_temp[['I']])
+            Tmax_[idx1, idx2] = np.array(df_temp[['time']])[np.argmax(df_temp[['I']])]
+            Ifinal_[idx1, idx2] = np.array(df_temp[['I']])[-1]
+            Dfinal_[idx1, idx2] = np.array(df_temp[['D']])[-1]
+            Ioscillations_[idx1, idx2] = count_oscillations(np.array(df_temp[['I']])[:,0])
+            Doscillations_[idx1, idx2] = count_oscillations(np.array(df_temp[['D']])[:,0])
+        
+    fig, axes = plt.subplots(2, 3, figsize=(14,10))
+    
+    #heatmaps
+    im1 = axes[0,0].matshow(Imax_, cmap='coolwarm')
+    im2 = axes[1,0].matshow(Tmax_, cmap='coolwarm')
+    im3 = axes[0,1].matshow(Ifinal_, cmap='coolwarm')
+    im4 = axes[1,1].matshow(Dfinal_, cmap='coolwarm')
+    im5 = axes[0,2].matshow(Ioscillations_, cmap='coolwarm')
+    im6 = axes[1,2].matshow(Doscillations_, cmap='coolwarm')
+
+    #axes[0,0].set_xticks(range(len(param_ticks2)))
+    #axes[0,0].set_yticks(range(len(param_ticks1)))
+    #axes[0,0].set_xticklabels(param_ticks2)
+    #axes[0,0].set_yticklabels(param_ticks1)
+    axes[0,0].set_title('Final Infected', y=-0.1)
+    axes[0,0].set_ylabel(f'{param_name1}')
+    plt.colorbar(im1, fraction=0.045, pad=0.05, ax=axes[0,0])
+
+    #axes[1,0].set_xticks(range(len(param_ticks2)))
+    #axes[1,0].set_yticks(range(len(param_ticks1)))
+    #axes[1,0].set_xticklabels(param_ticks2)
+    #axes[1,0].set_yticklabels(param_ticks1)
+    #axes[1,0].set_title('Final Defectors', y=-0.1)
+    axes[1,0].set_ylabel(f'{param_name1}')
+    axes[1,0].set_xlabel(f'{param_name2}')
+    plt.colorbar(im2, fraction=0.045, pad=0.05, ax=axes[1,0])
+    
+    #axes[0,1].set_xticks(range(len(param_ticks2)))
+    #axes[0,1].set_yticks(range(len(param_ticks1)))
+    #axes[0,1].set_xticklabels(param_ticks2)
+    #axes[0,1].set_yticklabels(param_ticks1)
+    axes[0,1].set_title('Max. Infected', y=-0.1)
+    plt.colorbar(im3, fraction=0.045, pad=0.05, ax=axes[0,1])
+
+    #axes[1,1].set_xticks(range(len(param_ticks2)))
+    #axes[1,1].set_yticks(range(len(param_ticks1)))
+    #axes[1,1].set_xticklabels(param_ticks2)
+    #axes[1,1].set_yticklabels(param_ticks1)
+    axes[1,1].set_title('Max. Infected Time', y=-0.1)
+    axes[1,1].set_xlabel(f'{param_name2}')
+    plt.colorbar(im4, fraction=0.045, pad=0.05, ax=axes[1,1])
+
+    #axes[0,2].set_xticks(range(len(param_ticks2)))
+    #axes[0,2].set_yticks(range(len(param_ticks1)))
+    #axes[0,2].set_xticklabels(param_ticks2)
+    #axes[0,2].set_yticklabels(param_ticks1)
+    axes[0,2].set_title('# Peaks of Infected', y=-0.1)
+    plt.colorbar(im5, fraction=0.045, pad=0.05, ax=axes[0,2])
+
+    #axes[1,2].set_xticks(range(len(param_ticks2)))
+    #axes[1,2].set_yticks(range(len(param_ticks1)))
+    #axes[1,2].set_xticklabels(param_ticks2)
+    #axes[1,2].set_yticklabels(param_ticks1)
+    axes[1,2].set_title('# Peaks of Defectors', y=-0.1)
+    axes[1,2].set_xlabel(f'{param_name2}')
+    plt.colorbar(im6, fraction=0.045, pad=0.05, ax=axes[1,2])
+
+    if not os.path.isdir( os.path.join(results_path, plots_path, '2D') ):
+                os.makedirs(os.path.join(results_path, plots_path, '2D'))
+    
+    plt.savefig(os.path.join(results_path, plots_path, '2D','heatmap_features_{}_{}_exp.jpeg'.format(param_name1,param_name2)))
+    plt.close()
+
+
+             
 
 df_parametric = pd.read_csv(os.path.join(main_path, parematric_df_dir), index_col=0)
 beta_ = df_parametric[['beta']]
 sigmaD_ = df_parametric[['sigmaD']]
 sigmaC_ = df_parametric[['sigmaC']]
+list_params = ['beta', 'sigmaD', 'sigmaC']
 
 beta_search = np.linspace(beta_.loc['min'][0], beta_.loc['max'][0], int(beta_.loc['num'][0]))
 sigmaD_search = np.linspace(sigmaD_.loc['min'][0], sigmaD_.loc['max'][0], int(sigmaD_.loc['num'][0]))
@@ -93,3 +185,17 @@ sigmaC_search = np.linspace(sigmaC_.loc['min'][0], sigmaC_.loc['max'][0], int(si
 graph_1D_experimentation(beta_search, 'beta')
 graph_1D_experimentation(sigmaD_search, 'sigmaD')
 graph_1D_experimentation(sigmaC_search, 'sigmaC')
+
+
+for idx1, param_name1 in enumerate(list_params):
+        df_temp = df_parametric[[param_name1]]
+        param_search1 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
+
+        list_temp = list_params.copy()
+        list_temp.remove(param_name1)
+        for idx2, param_name2 in enumerate(list_temp):
+            df_temp = df_parametric[[param_name2]]
+            param_search2 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
+            graph_2D_experimentation(param_search1, param_search2, param_name1, param_name2)
+        
+
