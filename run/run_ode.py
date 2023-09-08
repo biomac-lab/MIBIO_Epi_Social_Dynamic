@@ -178,7 +178,7 @@ sigmaD_ = df_parametric[['sigmaD']]
 sigmaC_ = df_parametric[['sigmaC']]
 
 list_values = ['low', 'mean', 'high']
-'''
+
 for idx1, val1 in enumerate(list_values):
     fig, ax = plt.subplots(3,3, figsize=(14,10))
     beta_temp = beta_.loc[val1][0]
@@ -208,7 +208,7 @@ for idx1, val1 in enumerate(list_values):
     plt.close()
 
 print('DONE SIMPLE SIMULATIONS')
-'''
+
 ### Save results
 
 
