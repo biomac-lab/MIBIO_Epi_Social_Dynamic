@@ -11,6 +11,7 @@ config_data = pd.read_csv(config_path, sep=',', header=None, index_col=0)
 results_path  = config_data.loc['results_dir'][1]
 plots_path = config_data.loc['plots_dir'][1]
 parematric_df_dir = config_data.loc['parametric_df_dir'][1]
+gamma = 1/7
 
 
 def SIS_replicator(x, t, beta_max, gamma, sigmaD, sigmaC=0, everything_dynamic:bool=False):
@@ -95,81 +96,100 @@ def run_sims_SIS_replicator(prob_infect, sigmaD, sigmaC:float=0, everything_dyna
 def exp_1D_SIS_replicator(param_search1, param1:str):
     if not os.path.isdir( os.path.join(results_path, 'ode_results', '1D') ):
                 os.makedirs(os.path.join(results_path, 'ode_results', '1D'))
+
+    beta_mean = beta_.loc['mean'][0]
+    sigmaD_mean = sigmaD_.loc['mean'][0]
+    sigmaC_mean = sigmaC_.loc['mean'][0]
+
     if param1 == 'beta':    
         for idx, p in tqdm(enumerate(param_search1)):
-            pd_var_res = run_sims_SIS_replicator(p, sigmaD_.loc['mean'][0], sigmaC_.loc['mean'][0], True)
+            pd_var_res = run_sims_SIS_replicator(p, sigmaD_mean, sigmaC_mean, True)
             pd_var_res_ = pd_var_res.copy()
             
-            pd_var_res_.to_csv(os.path.join(results_path, 'ode_results', '1D','ode_replicator_beta_{:0.2f}.csv'.format(p)))
+            pd_var_res_.to_csv(os.path.join(results_path, 
+    'ode_results','1D','ode_replicator_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p, sigmaD_mean, sigmaC_mean)))
         print('DONE beta EXPERIMENTATION')
     elif param1 == 'sigmaD':
         for idx, p in tqdm(enumerate(param_search1)):
-            pd_var_res = run_sims_SIS_replicator(beta_.loc['mean'][0], p, sigmaC_.loc['mean'][0], True)
+            pd_var_res = run_sims_SIS_replicator(beta_mean, p, sigmaC_mean, True)
             pd_var_res_ = pd_var_res.copy()
             
-            pd_var_res_.to_csv(os.path.join(results_path, 'ode_results', '1D','ode_replicator_sigmaD_{:0.2f}.csv'.format(p)))    
+            pd_var_res_.to_csv(os.path.join(results_path, 
+    'ode_results','1D','ode_replicator_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, p, sigmaC_mean)))    
         print('DONE sigmaD EXPERIMENTATION')
     elif param1 == 'sigmaC':
         for idx, p in tqdm(enumerate(param_search1)):
-            pd_var_res = run_sims_SIS_replicator(beta_.loc['mean'][0], sigmaD_.loc['mean'][0], p, True)
+            pd_var_res = run_sims_SIS_replicator(beta_mean, sigmaD_mean, p, True)
             pd_var_res_ = pd_var_res.copy()
             
-            pd_var_res_.to_csv(os.path.join(results_path, 'ode_results', '1D','ode_replicator_sigmaC_{:0.2f}.csv'.format(p)))
+            pd_var_res_.to_csv(os.path.join(results_path,
+    'ode_results','1D','ode_replicator_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, sigmaD_mean, p)))
         print('DONE sigmaC EXPERIMENTATION')
 
 
 def exp_2D_SIS_replicator(param_search1, param_search2, param1: str, param2: str):
     if not os.path.isdir( os.path.join(results_path, 'ode_results', '2D') ):
                 os.makedirs(os.path.join(results_path, 'ode_results', '2D'))
+    
+    beta_mean = beta_.loc['mean'][0]
+    sigmaD_mean = sigmaD_.loc['mean'][0]
+    sigmaC_mean = sigmaC_.loc['mean'][0]
+    
     if param1 == 'beta':
         if param2 == 'sigmaD':
             for idx1, p1 in tqdm(enumerate(param_search1)):
                  for idx2, p2 in tqdm(enumerate(param_search2)):
-                        pd_var_res = run_sims_SIS_replicator(p1, p2, sigmaC_.loc['mean'][0], True)
+                        pd_var_res = run_sims_SIS_replicator(p1,p2,sigmaC_mean,True)
                         pd_var_res_ = pd_var_res.copy()
             
-                        pd_var_res_.to_csv(os.path.join(results_path, 'ode_results', '2D','ode_replicator_beta_{:0.2f}_sigmaD_{:0.2f}.csv'.format(p1,p2)))
+                        pd_var_res_.to_csv(os.path.join(results_path, 
+            'ode_results', '2D','ode_replicator_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,p2, sigmaC_mean)))
         elif param2 == 'sigmaC':
              for idx1, p1 in tqdm(enumerate(param_search1)):
                  for idx2, p2 in tqdm(enumerate(param_search2)):
-                        pd_var_res = run_sims_SIS_replicator(p1, sigmaD_.loc['mean'][0], p2, True)
+                        pd_var_res = run_sims_SIS_replicator(p1,sigmaD_mean,p2,True)
                         pd_var_res_ = pd_var_res.copy()
             
-                        pd_var_res_.to_csv(os.path.join(results_path, 'ode_results', '2D','ode_replicator_beta_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,p2)))
+                        pd_var_res_.to_csv(os.path.join(results_path, 
+            'ode_results', '2D','ode_replicator_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,sigmaD_mean,p2)))
 
     elif param1 == 'sigmaD':
         if param2 == 'beta':
             for idx1, p1 in tqdm(enumerate(param_search1)):
                 for idx2, p2 in tqdm(enumerate(param_search2)):
-                    pd_var_res = run_sims_SIS_replicator(p2, p1, sigmaC_.loc['mean'][0], True)
+                    pd_var_res = run_sims_SIS_replicator(p2,p1,sigmaC_mean,True)
                     pd_var_res_ = pd_var_res.copy()
             
-                    pd_var_res_.to_csv(os.path.join(results_path, 'ode_results', '2D','ode_replicator_sigmaD_{:0.2f}_beta_{:0.2f}.csv'.format(p1,p2)))
+                    pd_var_res_.to_csv(os.path.join(results_path, 
+            'ode_results', '2D','ode_replicator_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p2,p1,sigmaC_mean)))
 
         elif param2 == 'sigmaC':
             for idx1, p1 in tqdm(enumerate(param_search1)):
                 for idx2, p2 in tqdm(enumerate(param_search2)):
-                    pd_var_res = run_sims_SIS_replicator(beta_.loc['mean'][0], p1, p2, True)
+                    pd_var_res = run_sims_SIS_replicator(beta_mean,p1,p2,True)
                     pd_var_res_ = pd_var_res.copy()
             
-                    pd_var_res_.to_csv(os.path.join(results_path, 'ode_results', '2D','ode_replicator_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,p2)))
+                    pd_var_res_.to_csv(os.path.join(results_path, 
+            'ode_results','2D','ode_replicator_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p1,p2)))
 
     elif param1 == 'sigamC':
         if param2 == 'beta':
             for idx1, p1 in tqdm(enumerate(param_search1)):
                 for idx2, p2 in tqdm(enumerate(param_search2)):
-                    pd_var_res = run_sims_SIS_replicator(p2, sigmaD_.loc['mean'][0], p1, True)
+                    pd_var_res = run_sims_SIS_replicator(p2,sigmaD_mean,p1,True)
                     pd_var_res_ = pd_var_res.copy()
             
-                    pd_var_res_.to_csv(os.path.join(results_path, 'ode_results', '2D','ode_replicator_sigmaC_{:0.2f}_beta_{:0.2f}.csv'.format(p1,p2)))
+                    pd_var_res_.to_csv(os.path.join(results_path, 
+            'ode_results','2D','ode_replicator_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p2,sigmaD_mean,p1)))
 
         elif param2 == 'sigmaD':
             for idx1, p1 in tqdm(enumerate(param_search1)):
                 for idx2, p2 in tqdm(enumerate(param_search2)):
-                    pd_var_res = run_sims_SIS_replicator(beta_.loc['mean'][0], p2, p1, True)
+                    pd_var_res = run_sims_SIS_replicator(beta_mean, p2, p1, True)
                     pd_var_res_ = pd_var_res.copy()
             
-                    pd_var_res_.to_csv(os.path.join(results_path, 'ode_results', '2D','ode_replicator_sigmaC_{:0.2f}_sigmaD_{:0.2f}.csv'.format(p1,p2)))
+                    pd_var_res_.to_csv(os.path.join(results_path, 
+            'ode_results','2D','ode_replicator_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p2,p1)))
 
 
 df_parametric = pd.read_csv(os.path.join(main_path, parematric_df_dir), index_col=0)
@@ -182,7 +202,7 @@ list_values = ['low', 'mean', 'high']
 for idx1, val1 in enumerate(list_values):
     fig, ax = plt.subplots(3,3, figsize=(14,10))
     beta_temp = beta_.loc[val1][0]
-    plt.suptitle(f'beta = {beta_temp}$')
+    plt.suptitle(f'${{\\beta}}$ = {beta_temp} & ${{R_0}}$ = {np.round(beta_temp/gamma,3)}')
     for idx2, val2 in enumerate(list_values):
         sigmaD_temp = sigmaD_.loc[val2][0]
         for idx3, val3 in enumerate(list_values):
@@ -190,21 +210,22 @@ for idx1, val1 in enumerate(list_values):
             pd_temp = run_sims_SIS_replicator(beta_temp, sigmaD_temp, sigmaC_temp, True)
 
             ax[idx2, idx3].plot(pd_temp['time'], pd_temp['I'], label='Infected')
-            ax[idx2,idx3].plot(pd_temp['time'], pd_temp['D'], label='Defector')
+            ax[idx2,idx3].plot(pd_temp['time'], pd_temp['C'], label='Cooperator')
             ax[idx2,idx3].grid()
             ax[idx2,idx3].legend()
 
             if idx2 == 0:
-                ax[idx2,idx3].set_title(f'sigma_D = {sigmaC_temp}') 
+                ax[idx2,idx3].set_title(f'${{\sigma_D}}$ = {sigmaC_temp}') 
             if idx3 == 0:
-                ax[idx2,idx3].set_ylabel(f'sigma_C = {sigmaD_temp} \n Fraction') 
+                ax[idx2,idx3].set_ylabel(f'${{\sigma_C}}$ = {sigmaD_temp} \n Fraction') 
             if idx2 == 2:
-                ax[idx2,idx3].set_xlabel('Time') 
+                ax[idx2,idx3].set_xlabel('Time [days]') 
 
     if not os.path.isdir( os.path.join(results_path, plots_path, 'ODE_Simulations') ):
                 os.makedirs(os.path.join(results_path, plots_path, 'ODE_Simulations'))
     
-    plt.savefig(os.path.join(results_path, plots_path, 'ODE_Simulations','simu_ode_replicator_beta_{:0.2f}.jpeg'.format(beta_temp)))
+    plt.savefig(os.path.join(results_path, plots_path, 'ODE_Simulations',
+                             'simu_ode_replicator_beta_{:0.2f}.jpeg'.format(beta_temp)), dpi=400)
     plt.close()
 
 print('DONE SIMPLE SIMULATIONS')
@@ -239,6 +260,8 @@ for idx1, param_name1 in enumerate(list_params):
         print(f'Finish {param_name1}-{param_name2} Experimentation')
 
 print('DONE 2D Experimentations')
+
+
 
 #TODO Finish this function
 #def exp_3D_SIS_replicator():
