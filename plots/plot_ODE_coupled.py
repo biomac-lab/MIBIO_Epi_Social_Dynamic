@@ -20,6 +20,8 @@ df_parametric = pd.read_csv(os.path.join(main_path, parematric_df_dir), index_co
 ##
 t_max = 300
 gamma = 1 / 7
+alpha = 0.2
+reward_matrix = np.array([[1.1, 1.1, 0.8, 0.7], [1.3, 1.3, 0.5, 0.3], [2, 1.8, 1, 1], [1.6, 1.4, 1, 1]])
 t = np.linspace(0, t_max, t_max*5)
 min_prominence = 0.001
 beta_ = df_parametric[['beta']]
