@@ -15,7 +15,7 @@ gamma = 1/7
 alpha = 0.2
 reward_matrix = np.array([[1.1, 1.1, 0.8, 0.7], [1.3, 1.3, 0.5, 0.3], [2, 1.8, 1, 1], [1.6, 1.4, 1, 1]])
 
-def SIS_coupled(variables, t, beta_max, alpha, gamma, A, sigmaD, sigmaC=0):
+def SIS_coupled(variables, t, beta_max, alpha, gamma, A, sigmaD, sigmaC, selfcare:bool=True, public_awareness:bool=True, dynamic_I:bool= True, dynamic_S:bool=True):
     global N
 
     S_c, S_d, I_c, I_d = variables
@@ -25,18 +25,40 @@ def SIS_coupled(variables, t, beta_max, alpha, gamma, A, sigmaD, sigmaC=0):
     S_total = S_c + S_d 
     I_total = I_c + I_d 
 
-    f_sc = A[0,0]*S_c + A[0,1]*S_d + (A[0,2]-sigmaC*(S_total))*I_c + (A[0,3]-sigmaC*(S_total))*I_d
-    f_sd = A[1,0]*S_c + A[1,1]*S_d + (A[1,2]-sigmaD*(I_total))*I_c + (A[1,3]-sigmaD*(I_total))*I_d
-    f_ic = A[2,0]*S_c + A[2,1]*S_d + (A[2,2]-sigmaC*(S_total))*I_c + (A[2,3]-sigmaC*(S_total))*I_d
-    f_id = A[3,0]*S_c + A[3,1]*S_d + (A[3,2]-sigmaD*(I_total))*I_c + (A[3,3]-sigmaD*(I_total))*I_d
+    penalization_Sc = 0
+    penalization_Sd = 0
+    penalization_Ic = 0
+    penalization_Id = 0
 
+    if selfcare:
+        penalization_Sc = sigmaC*(S_total)
+        penalization_Sd = sigmaD*(I_total)
+    if public_awareness:
+        penalization_Ic = sigmaC*(S_total)
+        penalization_Id = sigmaD*(I_total)
+    
+    f_sc = A[0,0]*S_c + A[0,1]*S_d + (A[0,2]-penalization_Sc)*I_c + (A[0,3]-sigmaC*(S_total))*I_d
+    f_sd = A[1,0]*S_c + A[1,1]*S_d + (A[1,2]-penalization_Sd)*I_c + (A[1,3]-penalization_Sd)*I_d
+    f_ic = A[2,0]*S_c + A[2,1]*S_d + (A[2,2]-penalization_Ic)*I_c + (A[2,3]-penalization_Ic)*I_d
+    f_id = A[3,0]*S_c + A[3,1]*S_d + (A[3,2]-penalization_Id)*I_c + (A[3,3]-penalization_Id)*I_d
+    
     fbar_s = f_sc*(S_c/S_total) + f_sd*(S_d/S_total)
     fbar_i = f_ic*(I_c/I_total) + f_id*(I_d/I_total)
 
-    dS_cdt = -beta*S_c*(I_d + alpha*I_c) + gamma*I_c + S_c*(f_sc - fbar_s)
-    dI_cdt = beta*S_c*(I_d + alpha*I_c) - gamma*I_c + I_c*(f_ic - fbar_i)
-    dS_ddt = -beta*S_d*(I_d + alpha*I_c) + gamma*I_d + S_d*(f_sd - fbar_s)
-    dI_ddt = beta*S_d*(I_d + alpha*I_c) - gamma*I_d + I_d*(f_id - fbar_i)
+    dS_cdt = -beta*S_c*(I_d + alpha*I_c) + gamma*I_c 
+    dI_cdt = beta*S_c*(I_d + alpha*I_c) - gamma*I_c 
+    dS_ddt = -beta*S_d*(I_d + alpha*I_c) + gamma*I_d 
+    dI_ddt = beta*S_d*(I_d + alpha*I_c) - gamma*I_d 
+
+    if dynamic_S:
+        dS_cdt += S_c*(f_sc - fbar_s)
+        dS_ddt += S_d*(f_sd - fbar_s)
+    if dynamic_I:
+        dI_cdt += I_c*(f_ic - fbar_i)
+        dI_ddt += I_d*(f_id - fbar_i)
+         
+    
+    
 
     return [dS_cdt, dS_ddt, dI_cdt, dI_ddt]
 
@@ -90,7 +112,7 @@ def exp_1D_SIS_coupled(param_search1, param1:str):
             pd_var_res_ = pd_var_res.copy()
             
             pd_var_res_.to_csv(os.path.join(results_path, 
-    'ode_results','1D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p, sigmaD_mean, sigmaC_mean)))
+    '1D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p, sigmaD_mean, sigmaC_mean)))
         print('DONE beta EXPERIMENTATION')
     elif param1 == 'sigmaD':
         for idx, p in tqdm(enumerate(param_search1)):
@@ -98,7 +120,7 @@ def exp_1D_SIS_coupled(param_search1, param1:str):
             pd_var_res_ = pd_var_res.copy()
             
             pd_var_res_.to_csv(os.path.join(results_path, 
-    'ode_results','1D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, p, sigmaC_mean)))    
+    '1D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, p, sigmaC_mean)))    
         print('DONE sigmaD EXPERIMENTATION')
     elif param1 == 'sigmaC':
         for idx, p in tqdm(enumerate(param_search1)):
@@ -106,7 +128,7 @@ def exp_1D_SIS_coupled(param_search1, param1:str):
             pd_var_res_ = pd_var_res.copy()
             
             pd_var_res_.to_csv(os.path.join(results_path,
-    'ode_results','1D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, sigmaD_mean, p)))
+    '1D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, sigmaD_mean, p)))
         print('DONE sigmaC EXPERIMENTATION')
 
 def exp_2D_SIS_coupled(param_search1, param_search2, param1: str, param2: str):
@@ -125,7 +147,7 @@ def exp_2D_SIS_coupled(param_search1, param_search2, param1: str, param2: str):
                         pd_var_res_ = pd_var_res.copy()
             
                         pd_var_res_.to_csv(os.path.join(results_path, 
-            'ode_results', '2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,p2, sigmaC_mean)))
+            '2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,p2, sigmaC_mean)))
         elif param2 == 'sigmaC':
              for idx1, p1 in tqdm(enumerate(param_search1)):
                  for idx2, p2 in tqdm(enumerate(param_search2)):
@@ -133,7 +155,7 @@ def exp_2D_SIS_coupled(param_search1, param_search2, param1: str, param2: str):
                         pd_var_res_ = pd_var_res.copy()
             
                         pd_var_res_.to_csv(os.path.join(results_path, 
-            'ode_results', '2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,sigmaD_mean,p2)))
+            '2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,sigmaD_mean,p2)))
 
     elif param1 == 'sigmaD':
         if param2 == 'beta':
@@ -143,7 +165,7 @@ def exp_2D_SIS_coupled(param_search1, param_search2, param1: str, param2: str):
                     pd_var_res_ = pd_var_res.copy()
             
                     pd_var_res_.to_csv(os.path.join(results_path, 
-            'ode_results', '2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p2,p1,sigmaC_mean)))
+            '2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p2,p1,sigmaC_mean)))
 
         elif param2 == 'sigmaC':
             for idx1, p1 in tqdm(enumerate(param_search1)):
@@ -152,7 +174,7 @@ def exp_2D_SIS_coupled(param_search1, param_search2, param1: str, param2: str):
                     pd_var_res_ = pd_var_res.copy()
             
                     pd_var_res_.to_csv(os.path.join(results_path, 
-            'ode_results','2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p1,p2)))
+            '2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p1,p2)))
 
     elif param1 == 'sigamC':
         if param2 == 'beta':
@@ -162,7 +184,7 @@ def exp_2D_SIS_coupled(param_search1, param_search2, param1: str, param2: str):
                     pd_var_res_ = pd_var_res.copy()
             
                     pd_var_res_.to_csv(os.path.join(results_path, 
-            'ode_results','2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p2,sigmaD_mean,p1)))
+            '2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p2,sigmaD_mean,p1)))
 
         elif param2 == 'sigmaD':
             for idx1, p1 in tqdm(enumerate(param_search1)):
@@ -171,7 +193,7 @@ def exp_2D_SIS_coupled(param_search1, param_search2, param1: str, param2: str):
                     pd_var_res_ = pd_var_res.copy()
             
                     pd_var_res_.to_csv(os.path.join(results_path, 
-            'ode_results','2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p2,p1)))
+            '2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p2,p1)))
 
 
 df_parametric = pd.read_csv(os.path.join(main_path, parematric_df_dir), index_col=0)
