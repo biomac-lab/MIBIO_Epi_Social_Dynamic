@@ -2,8 +2,9 @@ import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 from scipy.integrate import odeint
-import os
+import os, pickle
 from tqdm import tqdm
+import sympy as sym
 
 main_path = os.path.join(os.path.split(os.getcwd())[0],'Epi_Social_Dynamic')
 config_path = os.path.join(main_path, 'config.csv')
@@ -85,9 +86,15 @@ def run_sims_SIS_coupled(prob_infect, alpha, A, sigmaD, sigmaC:float=0):
     I_c_ = y[:,2]
     I_d_ = y[:,3]
 
+    t_cc = A[2,0]
+    t_cd = A[2,1]
+    t_dc = A[3,0]
+    t_dd = A[3,1]
+
     pd_var = pd.DataFrame(columns=['time', 'beta', 'alpha', 'sigma_D', 'sigma_C', 'S_c', 'S_d', 'I_c', 'I_d'])
     pd_var['time'] = t
     pd_var['beta'] = prob_infect
+    pd_var['R0'] = calculateR0(y0[0], y0[1], prob_infect, alpha, gamma, sigmaC, t_cc, t_cd, t_dc, t_dd)
     pd_var['alpha'] = alpha
     pd_var['sigma_D'] = sigmaD
     pd_var['sigma_C'] = sigmaC
@@ -195,6 +202,16 @@ def exp_2D_SIS_coupled(param_search1, param_search2, param1: str, param2: str):
                     pd_var_res_.to_csv(os.path.join(results_path, 
             '2D','ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p2,p1)))
 
+def calculateR0(S_c_v, S_d_v, beta_v, alpha_v, gamma_v, sigma_c_v, t_cc_v, t_cd_v, t_dc_v, t_dd_v):
+    with open(os.path.join(main_path, 'run', 'R0.pickle'), 'rb') as file:
+        expr_R0 = pickle.load(file)
+
+    S_c, S_d, beta, alpha, gamma, sigma_c, t_cc, t_cd, t_dc, t_dd = sym.symbols('S_c S_d beta alpha gamma sigma_c t_cc t_cd t_dc t_dd')
+
+    func_R0 = sym.lambdify([S_c, S_d, beta, alpha, gamma, sigma_c, t_cc, t_cd, t_dc, t_dd], expr_R0, 'numpy')
+    R0 = func_R0(S_c_v, S_d_v, beta_v, alpha_v, gamma_v, sigma_c_v, t_cc_v, t_cd_v, t_dc_v, t_dd_v)
+
+    return R0
 
 df_parametric = pd.read_csv(os.path.join(main_path, parematric_df_dir), index_col=0)
 beta_ = df_parametric[['beta']]
@@ -220,8 +237,10 @@ for idx1, val1 in enumerate(list_values):
             ax[idx2,idx3].grid()
             ax[idx2,idx3].legend()
 
+            ax[idx2, idx3].set_title(f'${{R0}}$ = {round(pd_temp['R0'][0], 3)}')
+
             if idx2 == 0:
-                ax[idx2,idx3].set_title(f'${{\sigma_D}}$ = {sigmaC_temp}') 
+                ax[idx2,idx3].set_title(f'${{\sigma_D}}$ = {sigmaC_temp} & ${{R0}}$ = {round(pd_temp['R0'][0], 3)}') 
             if idx3 == 0:
                 ax[idx2,idx3].set_ylabel(f'${{\sigma_C}}$ = {sigmaD_temp} \n Fraction') 
             if idx2 == 2:
