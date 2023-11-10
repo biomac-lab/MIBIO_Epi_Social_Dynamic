@@ -1,4 +1,5 @@
 ##
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -6,6 +7,7 @@ from scipy.integrate import odeint
 import os
 from tqdm import tqdm
 from scipy.signal import find_peaks
+import seaborn as sns
 
 
 main_path = os.path.join(os.path.split(os.getcwd())[0],'Epi_Social_Dynamic')
@@ -28,6 +30,14 @@ beta_ = df_parametric[['beta']]
 sigmaD_ = df_parametric[['sigmaD']]
 sigmaC_ = df_parametric[['sigmaC']]
 list_params = ['beta', 'sigmaD', 'sigmaC']
+
+dict_scenarios = {'static':(False, False, False, False), 
+                  'dynamicS':(False, False, False, True), 
+                  'dynamicS_SC':(True, False, False, True), 
+                  'dynamicSI_SC':(True, False, True, True), 
+                  'dynamicSI_SCPA':(True, True, True, True)}
+
+
 
 def count_oscillations(sim, min_prominence):
     idx_peaks, dict_peaks = find_peaks(sim, prominence=min_prominence)
@@ -78,7 +88,7 @@ def graph_simulationFeatures(path_to_results, name_file):
     plt.savefig(os.path.join(main_path, 'plots', 'ODE_Simulations', name_file+'.jpeg'), dpi=500)
     plt.close()
 
-def graph_1D_experimentation(param_search, param_name:str):
+def graph_1D_experimentation(param_search, param_name:str, folder:str):
     Imax_ = np.zeros(param_search.shape)
     Tmax_ = np.zeros(param_search.shape)
     Ifinal_ = np.zeros(param_search.shape)
@@ -88,14 +98,16 @@ def graph_1D_experimentation(param_search, param_name:str):
 
     for idx1, p in enumerate(param_search):
         if param_name == 'beta':
-            str_file = 'ode_decoupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_0.50'.format(p)  
+            str_file = 'ode_coupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_0.50'.format(p)  
         elif param_name == 'sigmaD':
-            str_file = 'ode_decoupled_beta_0.50_sigmaD_{:0.2f}_sigmaC_0.50'.format(p)
+            str_file = 'ode_coupled_beta_0.50_sigmaD_{:0.2f}_sigmaC_0.50'.format(p)
         else:
-            str_file = 'ode_decoupled_beta_0.50_sigmaD_0.50_sigmaC_{:0.2f}'.format(p)
-        path_to_results = os.path.join(results_path, '1D', str_file+'.csv')
+            str_file = 'ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_{:0.2f}'.format(p)
+        path_to_results = os.path.join(results_path, '1D', folder, str_file+'.csv')
         df_temp = pd.read_csv(path_to_results, index_col=0)
-        
+        df_temp['I'] = df_temp['I_c']+df_temp['I_d']
+        df_temp['C'] = df_temp['S_c']+df_temp['I_c']
+
         Imax_[idx1] = np.max(df_temp[['I']])
         Tmax_[idx1] = np.array(df_temp[['time']])[np.argmax(df_temp[['I']])]
         Ifinal_[idx1] = np.array(df_temp[['I']])[-1]
@@ -138,13 +150,13 @@ def graph_1D_experimentation(param_search, param_name:str):
     ax[1,2].set_xlabel(str_xlabel)
     ax[1,2].set_title('# Peaks of Cooperators')
 
-    if not os.path.isdir( os.path.join(plots_path, '1D') ):
-                os.makedirs(os.path.join(plots_path, '1D'))
+    if not os.path.isdir( os.path.join(plots_path, '1D', folder) ):
+                os.makedirs(os.path.join(plots_path, '1D', folder))
     
-    plt.savefig(os.path.join(plots_path, '1D','plot_decoupled_features_{}_exp.jpeg'.format(param_name)), dpi=450)
+    plt.savefig(os.path.join(plots_path, '1D', folder,'plot_coupled_features_{}_exp.jpeg'.format(param_name)), dpi=450)
     plt.close()
 
-def graph_2D_experimentation(param_search1, param_search2, param_name1: str, param_name2: str):
+def graph_2D_experimentation(param_search1, param_search2, param_name1: str, param_name2: str, folder:str):
     Imax_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
     Tmax_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
     Ifinal_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
@@ -163,22 +175,24 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
         
             if param_name1 == 'beta':
                 if param_name2 == 'sigmaD':
-                    str_file = 'ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_0.50'.format(p1, p2)
+                    str_file = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_0.50'.format(p1, p2)
                 else:
-                    str_file = 'ode_decoupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_{:0.2f}'.format(p1, p2)
+                    str_file = 'ode_coupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_{:0.2f}'.format(p1, p2)
             elif param_name1 == 'sigmaD':
                 if param_name2 == 'beta':
-                    str_file  = 'ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_0.50'.format(p2, p1)
+                    str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_0.50'.format(p2, p1)
                 else:
-                    str_file  = 'ode_decoupled_beta_0.50_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(p1, p2)
+                    str_file  = 'ode_coupled_beta_0.50_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(p1, p2)
             elif param_name1 == 'sigmaC':
                 if param_name2 == 'beta':
-                    str_file  = 'ode_decoupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_{:0.2f}'.format(p2, p1)
+                    str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_{:0.2f}'.format(p2, p1)
                 else:
-                    str_file  = 'ode_decoupled_beta_0.50_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(p2, p1)
+                    str_file  = 'ode_coupled_beta_0.50_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(p2, p1)
 
-            path_to_results = os.path.join(results_path, '2D', str_file+'.csv')
+            path_to_results = os.path.join(results_path, '2D', folder,str_file+'.csv')
             df_temp = pd.read_csv(path_to_results, index_col=0)
+            df_temp['I'] = df_temp['I_c']+df_temp['I_d']
+            df_temp['C'] = df_temp['S_c']+df_temp['I_c']
 
             Imax_[idx1, idx2] = np.max(df_temp[['I']])
             Tmax_[idx1, idx2] = np.array(df_temp[['time']])[np.argmax(df_temp[['I']]),0]
@@ -204,46 +218,76 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     else:
          str_xlabel = f'${{\sigma_C}}$'
 
+    num_ticks = 5
+    yticks = np.linspace(0, len(param_search1) - 1, num_ticks, dtype=np.int8)
+    xticks = np.linspace(0, len(param_search2) -1, num_ticks, dtype=np.int8)
+    # the content of labels of these yticks
+    yticklabs = [param_search1[int(idx)] for idx in yticks]
+    xticklabs = [param_search2[int(idx)] for idx in xticks]
     #heatmaps
-    im1 = axes[0,0].imshow(Imax_, cmap='plasma')
+    #im1 = axes[0,0](Imax_, cmap='plasma', vmin=0, vmax=1)
+    sns.heatmap(Imax_, ax=axes[0,0], cmap='plasma', vmin=0, vmax=1, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
     axes[0,0].set_title('Max. Infected')
     axes[0,0].set_ylabel(str_ylabel)
-    plt.colorbar(im1, fraction=0.045, pad=0.05, ax=axes[0,0])
+    axes[0,0].set_yticks(yticks, labels=yticklabs)
+    axes[0,0].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im1, fraction=0.045, pad=0.05, ax=axes[0,0])
 
-    im2 = axes[1,0].imshow(Tmax_, cmap='plasma')
+    #im2 = axes[1,0].imshow(Tmax_, cmap='cool', vmin=0, vmax=t_max)
+    sns.heatmap(Tmax_, ax=axes[1,0], cmap='cool', vmin=0, vmax=t_max, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
     axes[1,0].set_title('Time of Max. Infected')
     axes[1,0].set_ylabel(str_ylabel)
     axes[1,0].set_xlabel(str_xlabel)
-    plt.colorbar(im2, fraction=0.045, pad=0.05, ax=axes[1,0])
+    axes[1,0].set_yticks(yticks, labels=yticklabs)
+    axes[1,0].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im2, fraction=0.045, pad=0.05, ax=axes[1,0])
 
-    im3 = axes[0,1].imshow(Ifinal_, cmap='plasma')
+    #im3 = axes[0,1].imshow(Ifinal_, cmap='plasma', vmin=0, vmax=1)
+    sns.heatmap(Ifinal_, ax=axes[0,1], cmap='plasma', vmin=0, vmax=1, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
     axes[0,1].set_title('Final Infected')
-    plt.colorbar(im3, fraction=0.045, pad=0.05, ax=axes[0,1])
+    axes[0,1].set_yticks(yticks, labels=yticklabs)
+    axes[0,1].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im3, fraction=0.045, pad=0.05, ax=axes[0,1])
 
-    im4 = axes[1,1].imshow(Cfinal_, cmap='plasma')
+    #im4 = axes[1,1].imshow(Cfinal_, cmap='plasma', vmin=0, vmax=1)
+    sns.heatmap(Cfinal_, ax=axes[1,1], cmap='plasma', vmin=0, vmax=1, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
     axes[1,1].set_title('Final Cooperators')
     axes[1,1].set_xlabel(str_xlabel)
-    plt.colorbar(im4, fraction=0.045, pad=0.05, ax=axes[1,1])
+    axes[1,1].set_yticks(yticks, labels=yticklabs)
+    axes[1,1].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im4, fraction=0.045, pad=0.05, ax=axes[1,1])
 
-    im5 = axes[0,2].imshow(Ioscillations_, cmap='plasma')
+    #im5 = axes[0,2].imshow(Ioscillations_, cmap='summer', vmin=0, vmax=10)
+    sns.heatmap(Ioscillations_, ax=axes[0,2], cmap='summer', vmin=0, vmax=10, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
     axes[0,2].set_title('# Peaks of Infected')
-    plt.colorbar(im5, fraction=0.045, pad=0.05, ax=axes[0,2])
+    axes[0,2].set_yticks(yticks, labels=yticklabs)
+    axes[0,2].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im5, fraction=0.045, pad=0.05, ax=axes[0,2])
 
-    im6 = axes[1,2].imshow(Coscillations_, cmap='plasma')
+    #im6 = axes[1,2].imshow(Coscillations_, cmap='summer', vmin=0, vmax=10)
+    sns.heatmap(Coscillations_, ax=axes[1,2], cmap='summer', vmin=0, vmax=10, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
     axes[1,2].set_title('# Peaks of Cooperators')
     axes[1,2].set_xlabel(str_xlabel)
-    plt.colorbar(im6, fraction=0.045, pad=0.05, ax=axes[1,2])
+    axes[1,2].set_yticks(yticks, labels=yticklabs)
+    axes[1,2].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im6, fraction=0.045, pad=0.05, ax=axes[1,2])
 
     fig.tight_layout()
 
-    if not os.path.isdir( os.path.join(plots_path, '2D') ):
-                os.makedirs(os.path.join(plots_path, '2D'))
+    if not os.path.isdir( os.path.join(plots_path, '2D', folder) ):
+                os.makedirs(os.path.join(plots_path, '2D', folder))
     
-    plt.savefig(os.path.join(plots_path, '2D','heatmap_decoupled_features_{}_{}_exp.jpeg'.format(param_name1,param_name2)), dpi=400)
+    plt.savefig(os.path.join(plots_path, '2D', folder,'heatmap_coupled_features_{}_{}_exp.jpeg'.format(param_name1,param_name2)), dpi=400)
     plt.close()
 
 
-sim1_path = os.path.join(main_path, results_path, 
+'''sim1_path = os.path.join(main_path, results_path, 
                         '1D', 'ode_decoupled_beta_0.25_sigmaD_0.50_sigmaC_0.50')           
 sim2_path = os.path.join(main_path, results_path,
                         '1D', 'ode_decoupled_beta_0.79_sigmaD_0.50_sigmaC_0.50')
@@ -256,32 +300,33 @@ sim5_path = os.path.join(main_path, results_path,
 sim6_path = os.path.join(main_path, results_path,
                         '1D', 'ode_decoupled_beta_0.50_sigmaD_0.79_sigmaC_0.50')
 
-
 graph_simulationFeatures(sim1_path, 'feats_ode_decoupled_beta_0.25_sigmaD_0.50_sigmaC_0.50')
 graph_simulationFeatures(sim2_path, 'feats_ode_decoupled_beta_0.79_sigmaD_0.50_sigmaC_0.50')
 graph_simulationFeatures(sim3_path, 'feats_ode_decoupled_beta_0.50_sigmaD_0.50_sigmaC_0.25')
 graph_simulationFeatures(sim4_path, 'feats_ode_decoupled_beta_0.50_sigmaD_0.50_sigmaC_0.79')
 graph_simulationFeatures(sim5_path, 'feats_ode_decoupled_beta_0.50_sigmaD_0.25_sigmaC_0.50')
 graph_simulationFeatures(sim6_path, 'feats_ode_decoupled_beta_0.50_sigmaD_0.79_sigmaC_0.50')
+'''
 
 beta_search = np.linspace(beta_.loc['min'][0], beta_.loc['max'][0], int(beta_.loc['num'][0]))
 sigmaD_search = np.linspace(sigmaD_.loc['min'][0], sigmaD_.loc['max'][0], int(sigmaD_.loc['num'][0]))
 sigmaC_search = np.linspace(sigmaC_.loc['min'][0], sigmaC_.loc['max'][0], int(sigmaC_.loc['num'][0]))
 
-graph_1D_experimentation(beta_search, 'beta')
-graph_1D_experimentation(sigmaD_search, 'sigmaD')
-graph_1D_experimentation(sigmaC_search, 'sigmaC')
+for key_case, val_case in dict_scenarios.items():
+    graph_1D_experimentation(beta_search, 'beta', key_case)
+    graph_1D_experimentation(sigmaD_search, 'sigmaD', key_case)
+    graph_1D_experimentation(sigmaC_search, 'sigmaC', key_case)
 
+for key_case, val_case in dict_scenarios.items():
+    for idx1, param_name1 in enumerate(list_params):
+            df_temp = df_parametric[[param_name1]]
+            param_search1 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
 
-for idx1, param_name1 in enumerate(list_params):
-        df_temp = df_parametric[[param_name1]]
-        param_search1 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
-
-        list_temp = list_params.copy()
-        list_temp.remove(param_name1)
-        for idx2, param_name2 in enumerate(list_temp):
-            df_temp = df_parametric[[param_name2]]
-            param_search2 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
-            graph_2D_experimentation(param_search1, param_search2, param_name1, param_name2)
-        
+            list_temp = list_params.copy()
+            list_temp.remove(param_name1)
+            for idx2, param_name2 in enumerate(list_temp):
+                df_temp = df_parametric[[param_name2]]
+                param_search2 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
+                graph_2D_experimentation(param_search1, param_search2, param_name1, param_name2, key_case)
+            
 

@@ -63,8 +63,8 @@ def SIS_coupled(variables, t, beta_max, alpha, gamma, A, sigmaD, sigmaC, selfcar
 
     return [dS_cdt, dS_ddt, dI_cdt, dI_ddt]
 
-def run_sims_SIS_coupled(prob_infect, alpha, A, sigmaD, sigmaC:float=0, selfcare=True, public_awareness=True, dynamic_I=True, dynamic_S=True):
-    defectFract = 0.9
+def run_sims_SIS_coupled(d_fract, prob_infect, alpha, A, sigmaD, sigmaC:float=0, selfcare=True, public_awareness=True, dynamic_I=True, dynamic_S=True):
+    defectFract = d_fract
     coopFract = 1 - defectFract
     N = 5000
     I = 2
@@ -105,7 +105,7 @@ def run_sims_SIS_coupled(prob_infect, alpha, A, sigmaD, sigmaC:float=0, selfcare
 
     return pd_var
 
-def exp_1D_SIS_coupled(param_search1, param1:str, folder:str, selfcare=True, public_awareness=True, dynamic_I=True, dynamic_S=True):
+def exp_1D_SIS_coupled(d_fract, param_search1, param1:str, folder:str, selfcare=True, public_awareness=True, dynamic_I=True, dynamic_S=True):
     if not os.path.isdir( os.path.join(results_path, '1D', folder) ):
         os.makedirs(os.path.join(results_path, '1D', folder))
 
@@ -114,31 +114,31 @@ def exp_1D_SIS_coupled(param_search1, param1:str, folder:str, selfcare=True, pub
     sigmaC_mean = sigmaC_.loc['mean'][0]
 
     if param1 == 'beta':    
-        for idx, p in tqdm(enumerate(param_search1)):
-            pd_var_res = run_sims_SIS_coupled(p, alpha, reward_matrix, sigmaD_mean, sigmaC_mean, selfcare, public_awareness, dynamic_I, dynamic_S)
+        for idx, p in (enumerate(param_search1)):
+            pd_var_res = run_sims_SIS_coupled(d_fract, p, alpha, reward_matrix, sigmaD_mean, sigmaC_mean, selfcare, public_awareness, dynamic_I, dynamic_S)
             pd_var_res_ = pd_var_res.copy()
             
             pd_var_res_.to_csv(os.path.join(results_path, 
     '1D', folder,'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p, sigmaD_mean, sigmaC_mean, selfcare, public_awareness, dynamic_I, dynamic_S)))
         print('DONE beta EXPERIMENTATION')
     elif param1 == 'sigmaD':
-        for idx, p in tqdm(enumerate(param_search1)):
-            pd_var_res = run_sims_SIS_coupled(beta_mean, alpha, reward_matrix, p, sigmaC_mean, selfcare, public_awareness, dynamic_I, dynamic_S)
+        for idx, p in (enumerate(param_search1)):
+            pd_var_res = run_sims_SIS_coupled(d_fract, beta_mean, alpha, reward_matrix, p, sigmaC_mean, selfcare, public_awareness, dynamic_I, dynamic_S)
             pd_var_res_ = pd_var_res.copy()
             
             pd_var_res_.to_csv(os.path.join(results_path, 
     '1D', folder,'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, p, sigmaC_mean)))    
         print('DONE sigmaD EXPERIMENTATION')
     elif param1 == 'sigmaC':
-        for idx, p in tqdm(enumerate(param_search1)):
-            pd_var_res = run_sims_SIS_coupled(beta_mean, alpha, reward_matrix, sigmaD_mean, p, selfcare, public_awareness, dynamic_I, dynamic_S)
+        for idx, p in (enumerate(param_search1)):
+            pd_var_res = run_sims_SIS_coupled(d_fract, beta_mean, alpha, reward_matrix, sigmaD_mean, p, selfcare, public_awareness, dynamic_I, dynamic_S)
             pd_var_res_ = pd_var_res.copy()
             
             pd_var_res_.to_csv(os.path.join(results_path,
     '1D', folder,'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, sigmaD_mean, p)))
         print('DONE sigmaC EXPERIMENTATION')
 
-def exp_2D_SIS_coupled(param_search1, param_search2, param1: str, param2: str, folder:str, selfcare=True, public_awareness=True, dynamic_I=True, dynamic_S=True):
+def exp_2D_SIS_coupled(d_fract, param_search1, param_search2, param1: str, param2: str, folder:str, selfcare=True, public_awareness=True, dynamic_I=True, dynamic_S=True):
     if not os.path.isdir( os.path.join(results_path, '2D', folder) ):
                 os.makedirs(os.path.join(results_path, '2D', folder))
     
@@ -148,17 +148,17 @@ def exp_2D_SIS_coupled(param_search1, param_search2, param1: str, param2: str, f
     
     if param1 == 'beta':
         if param2 == 'sigmaD':
-            for idx1, p1 in tqdm(enumerate(param_search1)):
-                 for idx2, p2 in tqdm(enumerate(param_search2)):
-                        pd_var_res = run_sims_SIS_coupled(p1, alpha, reward_matrix,p2,sigmaC_mean,selfcare, public_awareness, dynamic_I, dynamic_S)
+            for idx1, p1 in (enumerate(param_search1)):
+                 for idx2, p2 in (enumerate(param_search2)):
+                        pd_var_res = run_sims_SIS_coupled(d_fract, p1, alpha, reward_matrix,p2,sigmaC_mean,selfcare, public_awareness, dynamic_I, dynamic_S)
                         pd_var_res_ = pd_var_res.copy()
             
                         pd_var_res_.to_csv(os.path.join(results_path, 
             '2D', folder,'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,p2, sigmaC_mean)))
         elif param2 == 'sigmaC':
-             for idx1, p1 in tqdm(enumerate(param_search1)):
-                 for idx2, p2 in tqdm(enumerate(param_search2)):
-                        pd_var_res = run_sims_SIS_coupled(p1, alpha, reward_matrix,sigmaD_mean,p2,selfcare,public_awareness,dynamic_I,dynamic_S)
+             for idx1, p1 in (enumerate(param_search1)):
+                 for idx2, p2 in (enumerate(param_search2)):
+                        pd_var_res = run_sims_SIS_coupled(d_fract, p1, alpha, reward_matrix,sigmaD_mean,p2,selfcare,public_awareness,dynamic_I,dynamic_S)
                         pd_var_res_ = pd_var_res.copy()
             
                         pd_var_res_.to_csv(os.path.join(results_path, 
@@ -166,18 +166,18 @@ def exp_2D_SIS_coupled(param_search1, param_search2, param1: str, param2: str, f
 
     elif param1 == 'sigmaD':
         if param2 == 'beta':
-            for idx1, p1 in tqdm(enumerate(param_search1)):
-                for idx2, p2 in tqdm(enumerate(param_search2)):
-                    pd_var_res = run_sims_SIS_coupled(p2,alpha,reward_matrix,p1,sigmaC_mean,selfcare,public_awareness,dynamic_I,dynamic_S)
+            for idx1, p1 in (enumerate(param_search1)):
+                for idx2, p2 in (enumerate(param_search2)):
+                    pd_var_res = run_sims_SIS_coupled(d_fract, p2,alpha,reward_matrix,p1,sigmaC_mean,selfcare,public_awareness,dynamic_I,dynamic_S)
                     pd_var_res_ = pd_var_res.copy()
             
                     pd_var_res_.to_csv(os.path.join(results_path, 
             '2D', folder,'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p2,p1,sigmaC_mean)))
 
         elif param2 == 'sigmaC':
-            for idx1, p1 in tqdm(enumerate(param_search1)):
-                for idx2, p2 in tqdm(enumerate(param_search2)):
-                    pd_var_res = run_sims_SIS_coupled(beta_mean,alpha,reward_matrix,p1,p2,selfcare,public_awareness,dynamic_I,dynamic_S)
+            for idx1, p1 in (enumerate(param_search1)):
+                for idx2, p2 in (enumerate(param_search2)):
+                    pd_var_res = run_sims_SIS_coupled(d_fract, beta_mean,alpha,reward_matrix,p1,p2,selfcare,public_awareness,dynamic_I,dynamic_S)
                     pd_var_res_ = pd_var_res.copy()
             
                     pd_var_res_.to_csv(os.path.join(results_path, 
@@ -185,18 +185,18 @@ def exp_2D_SIS_coupled(param_search1, param_search2, param1: str, param2: str, f
 
     elif param1 == 'sigamC':
         if param2 == 'beta':
-            for idx1, p1 in tqdm(enumerate(param_search1)):
-                for idx2, p2 in tqdm(enumerate(param_search2)):
-                    pd_var_res = run_sims_SIS_coupled(p2,alpha,reward_matrix,sigmaD_mean,p1,selfcare,public_awareness,dynamic_I,dynamic_S)
+            for idx1, p1 in (enumerate(param_search1)):
+                for idx2, p2 in (enumerate(param_search2)):
+                    pd_var_res = run_sims_SIS_coupled(d_fract, p2,alpha,reward_matrix,sigmaD_mean,p1,selfcare,public_awareness,dynamic_I,dynamic_S)
                     pd_var_res_ = pd_var_res.copy()
             
                     pd_var_res_.to_csv(os.path.join(results_path, 
             '2D', folder,'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p2,sigmaD_mean,p1)))
 
         elif param2 == 'sigmaD':
-            for idx1, p1 in tqdm(enumerate(param_search1)):
-                for idx2, p2 in tqdm(enumerate(param_search2)):
-                    pd_var_res = run_sims_SIS_coupled(beta_mean,alpha,reward_matrix, p2, p1,selfcare,public_awareness,dynamic_I,dynamic_S)
+            for idx1, p1 in (enumerate(param_search1)):
+                for idx2, p2 in (enumerate(param_search2)):
+                    pd_var_res = run_sims_SIS_coupled(d_fract, beta_mean,alpha,reward_matrix, p2, p1,selfcare,public_awareness,dynamic_I,dynamic_S)
                     pd_var_res_ = pd_var_res.copy()
             
                     pd_var_res_.to_csv(os.path.join(results_path, 
@@ -217,6 +217,7 @@ df_parametric = pd.read_csv(os.path.join(main_path, parematric_df_dir), index_co
 beta_ = df_parametric[['beta']]
 sigmaD_ = df_parametric[['sigmaD']]
 sigmaC_ = df_parametric[['sigmaC']]
+d_fract_ = df_parametric[['d_fract']]
 
 list_values = ['low', 'mean', 'high']
 dict_scenarios = {'static':(False, False, False, False), 
@@ -224,6 +225,40 @@ dict_scenarios = {'static':(False, False, False, False),
                   'dynamicS_SC':(True, False, False, True), 
                   'dynamicSI_SC':(True, False, True, True), 
                   'dynamicSI_SCPA':(True, True, True, True)}
+
+for key_case, val_case in tqdm(dict_scenarios.items()):
+    fig, ax = plt.subplots(3, 3, figsize=(14,10))
+    for idx1, val1 in enumerate(list_values):
+        beta_temp = beta_.loc[val1][0]
+        for idx2, val2 in enumerate(list_values):
+            d_fract_temp = d_fract_.loc[val2][0]
+            sigmaD_temp = sigmaD_.loc['mean'][0]
+            sigmaC_temp = sigmaC_.loc['mean'][0]
+            pd_temp = run_sims_SIS_coupled(d_fract_temp,beta_temp, alpha, reward_matrix, sigmaD_temp, sigmaC_temp, val_case[0], val_case[1], val_case[2], val_case[3])
+
+            ax[idx1, idx2].plot(pd_temp['time'], pd_temp['I_d'], label='Infected-Defector', color='darkred')
+            ax[idx1,idx2].plot(pd_temp['time'], pd_temp['S_d'], label='Susceptible-Defector', color='mediumblue')
+            ax[idx1, idx2].plot(pd_temp['time'], pd_temp['I_c'], label='Infected-Cooperator', color='orangered')
+            ax[idx1,idx2].plot(pd_temp['time'], pd_temp['S_c'], label='Susceptible-Cooperator', color='cornflowerblue')
+            ax[idx1,idx2].grid()
+            ax[idx1,idx2].legend()
+
+            ax[idx1, idx2].set_title(f'${{\sigma_C}}$ = {round(sigmaC_temp)} & ${{\sigma_D}}$ = {sigmaD_temp}')
+
+            if idx1 == 0:
+                ax[idx1,idx2].set_title(f'${{\%D0}}$ = {d_fract_temp} ') 
+            if idx2 == 0:
+                ax[idx1,idx2].set_ylabel(f'${{\\beta}}$ = {beta_temp}') 
+            if idx1 == 2:
+                ax[idx1,idx2].set_xlabel('Time [days]') 
+
+    if not os.path.isdir( os.path.join(plots_path, 'ODE_Simulations', key_case) ):
+                os.makedirs(os.path.join(plots_path, 'ODE_Simulations', key_case))
+        
+    plt.savefig(os.path.join(plots_path, 'ODE_Simulations', key_case,
+                            'simu_ode_coupled_sigmaC_{:0.2f}_sigmaD_{:0.2f}.jpeg'.format(sigmaC_temp, sigmaD_temp)), dpi=400)
+    plt.close()
+
 
 for key_case, val_case in tqdm(dict_scenarios.items()):
     for idx1, val1 in enumerate(list_values):
@@ -235,12 +270,12 @@ for key_case, val_case in tqdm(dict_scenarios.items()):
             for idx3, val3 in enumerate(list_values):
                 sigmaC_temp = sigmaC_.loc[val3][0]
                 
-                pd_temp = run_sims_SIS_coupled(beta_temp,alpha, reward_matrix, sigmaD_temp, sigmaC_temp, val_case[0], val_case[1], val_case[2], val_case[3])
+                pd_temp = run_sims_SIS_coupled(0.9,beta_temp,alpha, reward_matrix, sigmaD_temp, sigmaC_temp, val_case[0], val_case[1], val_case[2], val_case[3])
                 
-                ax[idx2, idx3].plot(pd_temp['time'], pd_temp['I_d'], label='Infected-Defector')
-                ax[idx2,idx3].plot(pd_temp['time'], pd_temp['S_d'], label='Susceptible-Defector')
-                ax[idx2, idx3].plot(pd_temp['time'], pd_temp['I_c'], label='Infected-Cooperator')
-                ax[idx2,idx3].plot(pd_temp['time'], pd_temp['S_c'], label='Susceptible-Cooperator')
+                ax[idx2, idx3].plot(pd_temp['time'], pd_temp['I_d'], label='Infected-Defector', color='darkred')
+                ax[idx2,idx3].plot(pd_temp['time'], pd_temp['S_d'], label='Susceptible-Defector', color='mediumblue')
+                ax[idx2, idx3].plot(pd_temp['time'], pd_temp['I_c'], label='Infected-Cooperator', color='orangered')
+                ax[idx2,idx3].plot(pd_temp['time'], pd_temp['S_c'], label='Susceptible-Cooperator', color='cornflowerblue')
                 ax[idx2,idx3].grid()
                 ax[idx2,idx3].legend()
 
@@ -270,7 +305,7 @@ for key_case, val_case in tqdm(dict_scenarios.items()):
     for idx, param_name in enumerate(list_params):
         df_temp = df_parametric[[param_name]]
         param_search = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
-        exp_1D_SIS_coupled(param_search, param_name, key_case, val_case[0], val_case[1], val_case[2], val_case[3])
+        exp_1D_SIS_coupled(0.9, param_search, param_name, key_case, val_case[0], val_case[1], val_case[2], val_case[3])
 
 print('DONE 1D Experimentations')
 
@@ -285,7 +320,7 @@ for key_case, val_case in tqdm(dict_scenarios.items()):
             df_temp = df_parametric[[param_name2]]
             param_search2 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
 
-            exp_2D_SIS_coupled(param_search1, param_search2, param_name1, param_name2, key_case, val_case[0], val_case[1], val_case[2], val_case[3])
+            exp_2D_SIS_coupled(0.9, param_search1, param_search2, param_name1, param_name2, key_case, val_case[0], val_case[1], val_case[2], val_case[3])
             print(f'Finish {param_name1}-{param_name2} Experimentation')
 
 print('DONE 2D Experimentations')
