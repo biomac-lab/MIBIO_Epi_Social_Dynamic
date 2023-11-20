@@ -15,6 +15,18 @@ parematric_df_dir = config_data.loc['parametric_df_dir'][1]
 gamma = 1/7
 alpha = 0.2
 reward_matrix = np.array([[1.1, 1.1, 0.8, 0.7], [1.3, 1.3, 0.5, 0.3], [2, 1.8, 1, 1], [1.6, 1.4, 1, 1]])
+df_parametric = pd.read_csv(os.path.join(main_path, parematric_df_dir), index_col=0)
+beta_ = df_parametric[['beta']]
+sigmaD_ = df_parametric[['sigmaD']]
+sigmaC_ = df_parametric[['sigmaC']]
+d_fract_ = df_parametric[['d_fract']]
+
+list_values = ['low', 'mean', 'high']
+dict_scenarios = {'static':(False, False, False, False), 
+                  'dynamicS':(False, False, False, True), 
+                  'dynamicS_SC':(True, False, False, True), 
+                  'dynamicSI_SC':(True, False, True, True), 
+                  'dynamicSI_SCPA':(True, True, True, True)}
 
 def SIS_coupled(variables, t, beta_max, alpha, gamma, A, sigmaD, sigmaC, selfcare:bool=True, public_awareness:bool=True, dynamic_I:bool= True, dynamic_S:bool=True):
     global N
@@ -202,6 +214,42 @@ def exp_2D_SIS_coupled(d_fract, param_search1, param_search2, param1: str, param
                     pd_var_res_.to_csv(os.path.join(results_path, 
             '2D', folder,'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p2,p1)))
 
+def exp_IC_SIS_coupled(initcond_search, param_search1, param1:str, folder:str, selfcare=True, public_awareness=True, dynamic_I=True, dynamic_S=True):
+    if not os.path.isdir( os.path.join(results_path, 'IC', folder) ):
+        os.makedirs(os.path.join(results_path, 'IC', folder))
+
+    beta_mean = beta_.loc['mean'][0]
+    sigmaD_mean = sigmaD_.loc['mean'][0]
+    sigmaC_mean = sigmaC_.loc['mean'][0]
+
+    if param1 == 'beta':    
+        for idx, p in (enumerate(param_search1)):
+            for idx2, d0 in enumerate(initcond_search):
+                pd_var_res = run_sims_SIS_coupled(d0, p, alpha, reward_matrix, sigmaD_mean, sigmaC_mean, selfcare, public_awareness, dynamic_I, dynamic_S)
+                pd_var_res_ = pd_var_res.copy()
+                
+                pd_var_res_.to_csv(os.path.join(results_path, 
+        'IC', folder,'ode_coupled_beta_{:0.2f}_IC_{:0.2f}.csv'.format(p, d0)))
+        print('DONE beta - Initial Conditions EXPERIMENTATION')
+    elif param1 == 'sigmaD':
+        for idx, p in (enumerate(param_search1)):
+            for idx2, d0 in enumerate(initcond_search):
+                pd_var_res = run_sims_SIS_coupled(d0, beta_mean, alpha, reward_matrix, p, sigmaC_mean, selfcare, public_awareness, dynamic_I, dynamic_S)
+                pd_var_res_ = pd_var_res.copy()
+                
+                pd_var_res_.to_csv(os.path.join(results_path, 
+        'IC', folder,'ode_coupled_sigmaD_{:0.2f}_IC_{:0.2f}.csv'.format(p, d0)))    
+        print('DONE sigmaD - Initial Conditions EXPERIMENTATION')
+    elif param1 == 'sigmaC':
+        for idx, p in (enumerate(param_search1)):
+            for idx2, d0 in enumerate(initcond_search):
+                pd_var_res = run_sims_SIS_coupled(d0, beta_mean, alpha, reward_matrix, sigmaD_mean, p, selfcare, public_awareness, dynamic_I, dynamic_S)
+                pd_var_res_ = pd_var_res.copy()
+                
+                pd_var_res_.to_csv(os.path.join(results_path,
+        'IC', folder,'ode_coupled_sigmaC_{:0.2f}_IC_{:0.2f}.csv'.format(p, d0)))
+        print('DONE sigmaC - Initial Conditions EXPERIMENTATION')
+
 def calculateR0(S_c_v, S_d_v, beta_v, alpha_v, gamma_v, sigma_c_v, t_cc_v, t_cd_v, t_dc_v, t_dd_v):
     with open(os.path.join(main_path, 'run', 'R0.pickle'), 'rb') as file:
         expr_R0 = pickle.load(file)
@@ -213,18 +261,6 @@ def calculateR0(S_c_v, S_d_v, beta_v, alpha_v, gamma_v, sigma_c_v, t_cc_v, t_cd_
 
     return R0
 
-df_parametric = pd.read_csv(os.path.join(main_path, parematric_df_dir), index_col=0)
-beta_ = df_parametric[['beta']]
-sigmaD_ = df_parametric[['sigmaD']]
-sigmaC_ = df_parametric[['sigmaC']]
-d_fract_ = df_parametric[['d_fract']]
-
-list_values = ['low', 'mean', 'high']
-dict_scenarios = {'static':(False, False, False, False), 
-                  'dynamicS':(False, False, False, True), 
-                  'dynamicS_SC':(True, False, False, True), 
-                  'dynamicSI_SC':(True, False, True, True), 
-                  'dynamicSI_SCPA':(True, True, True, True)}
 
 for key_case, val_case in tqdm(dict_scenarios.items()):
     fig, ax = plt.subplots(3, 3, figsize=(14,10))
@@ -301,11 +337,14 @@ print('DONE SIMPLE SIMULATIONS')
 
 list_params = ['beta', 'sigmaD', 'sigmaC']
 
+IC_search = np.linspace(d_fract_.loc['min'][0], d_fract_.loc['max'][0], int(d_fract_.loc['num'][0]))
+
 for key_case, val_case in tqdm(dict_scenarios.items()):
     for idx, param_name in enumerate(list_params):
         df_temp = df_parametric[[param_name]]
         param_search = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
         exp_1D_SIS_coupled(0.9, param_search, param_name, key_case, val_case[0], val_case[1], val_case[2], val_case[3])
+        exp_IC_SIS_coupled(IC_search, param_search, param_name, key_case, val_case[0], val_case[1], val_case[2], val_case[3])
 
 print('DONE 1D Experimentations')
 

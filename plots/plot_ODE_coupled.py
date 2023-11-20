@@ -29,6 +29,7 @@ min_prominence = 0.001
 beta_ = df_parametric[['beta']]
 sigmaD_ = df_parametric[['sigmaD']]
 sigmaC_ = df_parametric[['sigmaC']]
+d_fract_ = df_parametric[['d_fract']]
 list_params = ['beta', 'sigmaD', 'sigmaC']
 
 dict_scenarios = {'static':(False, False, False, False), 
@@ -36,7 +37,6 @@ dict_scenarios = {'static':(False, False, False, False),
                   'dynamicS_SC':(True, False, False, True), 
                   'dynamicSI_SC':(True, False, True, True), 
                   'dynamicSI_SCPA':(True, True, True, True)}
-
 
 
 def count_oscillations(sim, min_prominence):
@@ -155,6 +155,123 @@ def graph_1D_experimentation(param_search, param_name:str, folder:str):
     
     plt.savefig(os.path.join(plots_path, '1D', folder,'plot_coupled_features_{}_exp.jpeg'.format(param_name)), dpi=450)
     plt.close()
+
+def graph_IC_experimentation(initcond_search, param_search, param_name:str, folder:str):
+    Imax_ = np.zeros((param_search.shape[0], initcond_search.shape[0]))
+    Tmax_ = np.zeros((param_search.shape[0], initcond_search.shape[0]))
+    Ifinal_ = np.zeros((param_search.shape[0], initcond_search.shape[0]))
+    Cfinal_ = np.zeros((param_search.shape[0], initcond_search.shape[0]))
+    Ioscillations_ = np.zeros((param_search.shape[0], initcond_search.shape[0]))
+    Coscillations_ = np.zeros((param_search.shape[0], initcond_search.shape[0]))
+
+    param_ticks1 = np.linspace(param_search[0], initcond_search[-1], 6)
+    param_ticks2 = np.linspace(param_search[0], initcond_search[-1], 6)
+
+    for idx1, p1 in enumerate(param_search):
+        df_temp = df_parametric[[param_name]]
+
+        for idx2, p2 in enumerate(initcond_search):
+        
+            if param_name == 'beta':
+                str_file = 'ode_coupled_beta_{:0.2f}_IC_{:0.2f}'.format(p1, p2)
+                
+            elif param_name == 'sigmaD':
+                str_file  = 'ode_coupled_sigmaD_{:0.2f}_IC_{:0.2f}'.format(p1, p2)
+
+            elif param_name == 'sigmaC':    
+                str_file  = 'ode_coupled_sigmaC_{:0.2f}_IC_{:0.2f}'.format(p1, p2)
+                
+            path_to_results = os.path.join(results_path, 'IC', folder,str_file+'.csv')
+            df_temp = pd.read_csv(path_to_results, index_col=0)
+            df_temp['I'] = df_temp['I_c']+df_temp['I_d']
+            df_temp['C'] = df_temp['S_c']+df_temp['I_c']
+
+            Imax_[idx1, idx2] = np.max(df_temp[['I']])
+            Tmax_[idx1, idx2] = np.array(df_temp[['time']])[np.argmax(df_temp[['I']]),0]
+            Ifinal_[idx1, idx2] = np.array(df_temp[['I']])[-1,0]
+            Cfinal_[idx1, idx2] = np.array(df_temp[['C']])[-1,0]
+
+            Ioscillations_[idx1, idx2] = count_oscillations(np.array(df_temp[['I']])[:,0], 0.001)[1]
+            Coscillations_[idx1, idx2] = count_oscillations(np.array(df_temp[['C']])[:,0], 0.001)[1]
+        
+    fig, axes = plt.subplots(2, 3, figsize=(14,10))
+    
+    if param_name == 'beta':
+         str_ylabel = f'${{\\{param_name}}}$'
+    elif param_name == 'sigmaD':
+         str_ylabel = f'${{\sigma_D}}$'
+    else:
+         str_ylabel = f'${{\sigma_C}}$'
+
+    str_xlabel = r'$\%D0$'
+
+    num_ticks = 5
+    yticks = np.linspace(0, len(param_search) - 1, num_ticks, dtype=np.int8)
+    xticks = np.linspace(0, len(initcond_search) -1, num_ticks, dtype=np.int8)
+    # the content of labels of these yticks
+    yticklabs = [param_search[int(idx)] for idx in yticks]
+    xticklabs = [initcond_search[int(idx)] for idx in xticks]
+    #heatmaps
+    #im1 = axes[0,0](Imax_, cmap='plasma', vmin=0, vmax=1)
+    sns.heatmap(Imax_, ax=axes[0,0], cmap='plasma', vmin=0, vmax=1, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
+    axes[0,0].set_title('Max. Infected')
+    axes[0,0].set_ylabel(str_ylabel)
+    axes[0,0].set_yticks(yticks, labels=yticklabs)
+    axes[0,0].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im1, fraction=0.045, pad=0.05, ax=axes[0,0])
+
+    #im2 = axes[1,0].imshow(Tmax_, cmap='cool', vmin=0, vmax=t_max)
+    sns.heatmap(Tmax_, ax=axes[1,0], cmap='cool', vmin=0, vmax=t_max, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
+    axes[1,0].set_title('Time of Max. Infected')
+    axes[1,0].set_ylabel(str_ylabel)
+    axes[1,0].set_xlabel(str_xlabel)
+    axes[1,0].set_yticks(yticks, labels=yticklabs)
+    axes[1,0].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im2, fraction=0.045, pad=0.05, ax=axes[1,0])
+
+    #im3 = axes[0,1].imshow(Ifinal_, cmap='plasma', vmin=0, vmax=1)
+    sns.heatmap(Ifinal_, ax=axes[0,1], cmap='plasma', vmin=0, vmax=1, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
+    axes[0,1].set_title('Final Infected')
+    axes[0,1].set_yticks(yticks, labels=yticklabs)
+    axes[0,1].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im3, fraction=0.045, pad=0.05, ax=axes[0,1])
+
+    #im4 = axes[1,1].imshow(Cfinal_, cmap='plasma', vmin=0, vmax=1)
+    sns.heatmap(Cfinal_, ax=axes[1,1], cmap='plasma', vmin=0, vmax=1, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
+    axes[1,1].set_title('Final Cooperators')
+    axes[1,1].set_xlabel(str_xlabel)
+    axes[1,1].set_yticks(yticks, labels=yticklabs)
+    axes[1,1].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im4, fraction=0.045, pad=0.05, ax=axes[1,1])
+
+    #im5 = axes[0,2].imshow(Ioscillations_, cmap='summer', vmin=0, vmax=10)
+    sns.heatmap(Ioscillations_, ax=axes[0,2], cmap='summer', vmin=0, vmax=10, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
+    axes[0,2].set_title('# Peaks of Infected')
+    axes[0,2].set_yticks(yticks, labels=yticklabs)
+    axes[0,2].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im5, fraction=0.045, pad=0.05, ax=axes[0,2])
+
+    #im6 = axes[1,2].imshow(Coscillations_, cmap='summer', vmin=0, vmax=10)
+    sns.heatmap(Coscillations_, ax=axes[1,2], cmap='summer', vmin=0, vmax=10, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
+    axes[1,2].set_title('# Peaks of Cooperators')
+    axes[1,2].set_xlabel(str_xlabel)
+    axes[1,2].set_yticks(yticks, labels=yticklabs)
+    axes[1,2].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im6, fraction=0.045, pad=0.05, ax=axes[1,2])
+
+    fig.tight_layout()
+
+    if not os.path.isdir( os.path.join(plots_path, 'IC', folder) ):
+                os.makedirs(os.path.join(plots_path, 'IC', folder))
+    
+    plt.savefig(os.path.join(plots_path, 'IC', folder,'heatmap_coupled_features_{}_exp.jpeg'.format(param_name)), dpi=400)
+    plt.close() 
 
 def graph_2D_experimentation(param_search1, param_search2, param_name1: str, param_name2: str, folder:str):
     Imax_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
@@ -311,11 +428,14 @@ graph_simulationFeatures(sim6_path, 'feats_ode_decoupled_beta_0.50_sigmaD_0.79_s
 beta_search = np.linspace(beta_.loc['min'][0], beta_.loc['max'][0], int(beta_.loc['num'][0]))
 sigmaD_search = np.linspace(sigmaD_.loc['min'][0], sigmaD_.loc['max'][0], int(sigmaD_.loc['num'][0]))
 sigmaC_search = np.linspace(sigmaC_.loc['min'][0], sigmaC_.loc['max'][0], int(sigmaC_.loc['num'][0]))
+list_paramsSearch = [beta_search, sigmaD_search, sigmaC_search]
+IC_search = np.linspace(d_fract_.loc['min'][0], d_fract_.loc['max'][0], int(d_fract_.loc['num'][0]))
+
 
 for key_case, val_case in dict_scenarios.items():
-    graph_1D_experimentation(beta_search, 'beta', key_case)
-    graph_1D_experimentation(sigmaD_search, 'sigmaD', key_case)
-    graph_1D_experimentation(sigmaC_search, 'sigmaC', key_case)
+    for idx, param in enumerate(list_params):
+        graph_1D_experimentation(list_paramsSearch[idx], param, key_case)
+        graph_IC_experimentation(IC_search, list_paramsSearch[idx], param, key_case)
 
 for key_case, val_case in dict_scenarios.items():
     for idx1, param_name1 in enumerate(list_params):
