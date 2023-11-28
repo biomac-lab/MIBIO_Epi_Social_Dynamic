@@ -222,7 +222,7 @@ def graph_IC_experimentation(initcond_search, param_search, param_name:str, fold
     #plt.colorbar(im1, fraction=0.045, pad=0.05, ax=axes[0,0])
 
     #im2 = axes[1,0].imshow(Tmax_, cmap='cool', vmin=0, vmax=t_max)
-    sns.heatmap(Tmax_, ax=axes[1,0], cmap='cool', vmin=0, vmax=t_max, cbar=True,
+    sns.heatmap(Tmax_, ax=axes[1,0], cmap='spring', vmin=0, vmax=t_max, cbar=True,
                 xticklabels=xticklabs, yticklabels=yticklabs)
     axes[1,0].set_title('Time of Max. Infected')
     axes[1,0].set_ylabel(str_ylabel)
@@ -352,7 +352,7 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #plt.colorbar(im1, fraction=0.045, pad=0.05, ax=axes[0,0])
 
     #im2 = axes[1,0].imshow(Tmax_, cmap='cool', vmin=0, vmax=t_max)
-    sns.heatmap(Tmax_, ax=axes[1,0], cmap='cool', vmin=0, vmax=t_max, cbar=True,
+    sns.heatmap(Tmax_, ax=axes[1,0], cmap='spring', vmin=0, vmax=t_max, cbar=True,
                 xticklabels=xticklabs, yticklabels=yticklabs)
     axes[1,0].set_title('Time of Max. Infected')
     axes[1,0].set_ylabel(str_ylabel)

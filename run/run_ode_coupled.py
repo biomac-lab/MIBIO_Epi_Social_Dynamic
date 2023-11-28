@@ -318,7 +318,8 @@ for key_case, val_case in tqdm(dict_scenarios.items()):
                 ax[idx2, idx3].set_title(f'${{R0}}$ = {round(pd_temp['R0'][0], 3)}')
 
                 if idx2 == 0:
-                    ax[idx2,idx3].set_title(f'${{\sigma_D}}$ = {sigmaC_temp} & ${{R0}}$ = {round(pd_temp['R0'][0], 3)}') 
+                    #ax[idx2,idx3].set_title(f'${{\sigma_D}}$ = {sigmaC_temp} & ${{R0}}$ = {round(pd_temp['R0'][0], 3)}') 
+                    ax[idx2,idx3].set_title(f'${{\sigma_D}}$ = {sigmaC_temp} ') 
                 if idx3 == 0:
                     ax[idx2,idx3].set_ylabel(f'${{\sigma_C}}$ = {sigmaD_temp} \n Fraction') 
                 if idx2 == 2:

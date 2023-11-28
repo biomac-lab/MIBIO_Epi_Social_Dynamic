@@ -6,6 +6,7 @@ from scipy.integrate import odeint
 import os
 from tqdm import tqdm
 from scipy.signal import find_peaks
+import seaborn as sns
 
 
 main_path = os.path.join(os.path.split(os.getcwd())[0],'Epi_Social_Dynamic')
@@ -73,7 +74,11 @@ def graph_simulationFeatures(path_to_results, name_file):
     axes[1].set_xlabel('Time [days]')
 
     fig.suptitle(f'${{\\beta}}$ = {beta} & ${{R_0}}$={np.round(beta/gamma,3)} \n ${{\sigma_D}}$ = {sigmaD} & ${{\sigma_C}}$={sigmaC}')
-    plt.savefig(os.path.join(main_path, 'plots', 'ODE_Simulations', name_file+'.jpeg'), dpi=500)
+    
+    if not os.path.isdir( os.path.join(plots_path, 'ODE_Simulations', 'decoupled')):
+        os.makedirs(os.path.join(plots_path, 'ODE_Simulations', 'decoupled'))    
+
+    plt.savefig(os.path.join(main_path, 'plots', 'ODE_Simulations', 'decoupled', name_file+'.jpeg'), dpi=500)
     plt.close()
 
 def graph_1D_experimentation(param_search, param_name:str):
@@ -136,10 +141,10 @@ def graph_1D_experimentation(param_search, param_name:str):
     ax[1,2].set_xlabel(str_xlabel)
     ax[1,2].set_title('# Peaks of Cooperators')
 
-    if not os.path.isdir( os.path.join(plots_path, '1D') ):
-                os.makedirs(os.path.join(plots_path, '1D'))
+    if not os.path.isdir( os.path.join(plots_path, '1D', 'decoupled') ):
+                os.makedirs(os.path.join(plots_path, '1D', 'decoupled'))
     
-    plt.savefig(os.path.join(plots_path, '1D','plot_decoupled_features_{}_exp.jpeg'.format(param_name)), dpi=450)
+    plt.savefig(os.path.join(plots_path, '1D', 'decoupled','plot_decoupled_features_{}_exp.jpeg'.format(param_name)), dpi=450)
     plt.close()
 
 def graph_2D_experimentation(param_search1, param_search2, param_name1: str, param_name2: str):
@@ -202,42 +207,72 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     else:
          str_xlabel = f'${{\sigma_C}}$'
 
+    num_ticks = 5
+    yticks = np.linspace(0, len(param_search1) - 1, num_ticks, dtype=np.int8)
+    xticks = np.linspace(0, len(param_search2) -1, num_ticks, dtype=np.int8)
+    # the content of labels of these yticks
+    yticklabs = [param_search1[int(idx)] for idx in yticks]
+    xticklabs = [param_search2[int(idx)] for idx in xticks]
+
     #heatmaps
-    im1 = axes[0,0].imshow(Imax_, cmap='plasma')
+    #im1 = axes[0,0].imshow(Imax_, cmap='plasma')
+    sns.heatmap(Imax_, ax=axes[0,0], cmap='plasma', vmin=0, vmax=1, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
     axes[0,0].set_title('Max. Infected')
     axes[0,0].set_ylabel(str_ylabel)
-    plt.colorbar(im1, fraction=0.045, pad=0.05, ax=axes[0,0])
+    axes[0,0].set_yticks(yticks, labels=yticklabs)
+    axes[0,0].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im1, fraction=0.045, pad=0.05, ax=axes[0,0])
 
-    im2 = axes[1,0].imshow(Tmax_, cmap='plasma')
+    #im2 = axes[1,0].imshow(Tmax_, cmap='plasma')
+    sns.heatmap(Tmax_, ax=axes[1,0], cmap='spring', vmin=0, vmax=t_max, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
     axes[1,0].set_title('Time of Max. Infected')
     axes[1,0].set_ylabel(str_ylabel)
     axes[1,0].set_xlabel(str_xlabel)
-    plt.colorbar(im2, fraction=0.045, pad=0.05, ax=axes[1,0])
+    axes[1,0].set_yticks(yticks, labels=yticklabs)
+    axes[1,0].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im2, fraction=0.045, pad=0.05, ax=axes[1,0])
 
-    im3 = axes[0,1].imshow(Ifinal_, cmap='plasma')
+    #im3 = axes[0,1].imshow(Ifinal_, cmap='plasma')
+    sns.heatmap(Ifinal_, ax=axes[0,1], cmap='plasma', vmin=0, vmax=1, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
     axes[0,1].set_title('Final Infected')
-    plt.colorbar(im3, fraction=0.045, pad=0.05, ax=axes[0,1])
+    axes[0,1].set_yticks(yticks, labels=yticklabs)
+    axes[0,1].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im3, fraction=0.045, pad=0.05, ax=axes[0,1])
 
-    im4 = axes[1,1].imshow(Cfinal_, cmap='plasma')
+    #im4 = axes[1,1].imshow(Cfinal_, cmap='plasma')
+    sns.heatmap(Cfinal_, ax=axes[1,1], cmap='plasma', vmin=0, vmax=1, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
     axes[1,1].set_title('Final Cooperators')
     axes[1,1].set_xlabel(str_xlabel)
-    plt.colorbar(im4, fraction=0.045, pad=0.05, ax=axes[1,1])
+    axes[1,1].set_yticks(yticks, labels=yticklabs)
+    axes[1,1].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im4, fraction=0.045, pad=0.05, ax=axes[1,1])
 
-    im5 = axes[0,2].imshow(Ioscillations_, cmap='plasma')
+    #im5 = axes[0,2].imshow(Ioscillations_, cmap='plasma')
+    sns.heatmap(Ioscillations_, ax=axes[0,2], cmap='summer', vmin=0, vmax=10, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
+    
     axes[0,2].set_title('# Peaks of Infected')
-    plt.colorbar(im5, fraction=0.045, pad=0.05, ax=axes[0,2])
+    #plt.colorbar(im5, fraction=0.045, pad=0.05, ax=axes[0,2])
 
-    im6 = axes[1,2].imshow(Coscillations_, cmap='plasma')
+    #im6 = axes[1,2].imshow(Coscillations_, cmap='plasma')
+    sns.heatmap(Coscillations_, ax=axes[1,2], cmap='summer', vmin=0, vmax=10, cbar=True,
+                xticklabels=xticklabs, yticklabels=yticklabs)
     axes[1,2].set_title('# Peaks of Cooperators')
     axes[1,2].set_xlabel(str_xlabel)
-    plt.colorbar(im6, fraction=0.045, pad=0.05, ax=axes[1,2])
+    axes[1,2].set_yticks(yticks, labels=yticklabs)
+    axes[1,2].set_xticks(xticks, labels=xticklabs)
+    #plt.colorbar(im6, fraction=0.045, pad=0.05, ax=axes[1,2])
 
     fig.tight_layout()
 
-    if not os.path.isdir( os.path.join(plots_path, '2D') ):
-                os.makedirs(os.path.join(plots_path, '2D'))
+    if not os.path.isdir( os.path.join(plots_path, '2D', 'decoupled') ):
+                os.makedirs(os.path.join(plots_path, '2D', 'decoupled'))
     
-    plt.savefig(os.path.join(plots_path, '2D','heatmap_decoupled_features_{}_{}_exp.jpeg'.format(param_name1,param_name2)), dpi=400)
+    plt.savefig(os.path.join(plots_path, '2D', 'decoupled','heatmap_decoupled_features_{}_{}_exp.jpeg'.format(param_name1,param_name2)), dpi=400)
     plt.close()
 
 
