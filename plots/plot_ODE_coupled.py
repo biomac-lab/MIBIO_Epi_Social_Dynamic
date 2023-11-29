@@ -413,22 +413,22 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
 sim1_path = os.path.join(main_path, results_path, 
                         '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.25_sigmaD_0.50_sigmaC_0.50')           
 sim2_path = os.path.join(main_path, results_path,
-                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.79_sigmaD_0.50_sigmaC_0.50')
+                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_0.50')
 sim3_path = os.path.join(main_path, results_path, 
-                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_0.25')
+                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_1.50_sigmaD_0.50_sigmaC_0.50')
 sim4_path = os.path.join(main_path, results_path, 
-                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_0.79')
+                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_2.00_sigmaD_0.50_sigmaC_0.50')
 sim5_path = os.path.join(main_path, results_path,
-                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.50_sigmaD_0.25_sigmaC_0.50')
+                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_3.50_sigmaD_0.50_sigmaC_0.50')
 sim6_path = os.path.join(main_path, results_path,
-                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.50_sigmaD_0.79_sigmaC_0.50')
+                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_4.50_sigmaD_0.50_sigmaC_0.50')
 
 graph_simulationFeatures(sim1_path, 'feats_ode_coupled_beta_0.25_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
-graph_simulationFeatures(sim2_path, 'feats_ode_coupled_beta_0.79_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
-graph_simulationFeatures(sim3_path, 'feats_ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_0.25', 'dynamicSI_SCPA')
-graph_simulationFeatures(sim4_path, 'feats_ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_0.79', 'dynamicSI_SCPA')
-graph_simulationFeatures(sim5_path, 'feats_ode_coupled_beta_0.50_sigmaD_0.25_sigmaC_0.50', 'dynamicSI_SCPA')
-graph_simulationFeatures(sim6_path, 'feats_ode_coupled_beta_0.50_sigmaD_0.79_sigmaC_0.50', 'dynamicSI_SCPA')
+graph_simulationFeatures(sim2_path, 'feats_ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
+graph_simulationFeatures(sim3_path, 'feats_ode_coupled_beta_1.50_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
+graph_simulationFeatures(sim4_path, 'feats_ode_coupled_beta_2.00_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
+graph_simulationFeatures(sim5_path, 'feats_ode_coupled_beta_3.50_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
+graph_simulationFeatures(sim6_path, 'feats_ode_coupled_beta_4.50_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
 
 
 beta_search = np.linspace(beta_.loc['min'][0], beta_.loc['max'][0], int(beta_.loc['num'][0]))
@@ -438,7 +438,7 @@ list_paramsSearch = [beta_search, sigmaD_search, sigmaC_search]
 IC_search = np.linspace(d_fract_.loc['min'][0], d_fract_.loc['max'][0], int(d_fract_.loc['num'][0]))
 
 
-for key_case, val_case in dict_scenarios.items():
+'''for key_case, val_case in dict_scenarios.items():
     for idx, param in enumerate(list_params):
         graph_1D_experimentation(list_paramsSearch[idx], param, key_case)
         graph_IC_experimentation(IC_search, list_paramsSearch[idx], param, key_case)
@@ -454,5 +454,5 @@ for key_case, val_case in dict_scenarios.items():
                 df_temp = df_parametric[[param_name2]]
                 param_search2 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
                 graph_2D_experimentation(param_search1, param_search2, param_name1, param_name2, key_case)
-            
+'''            
 
