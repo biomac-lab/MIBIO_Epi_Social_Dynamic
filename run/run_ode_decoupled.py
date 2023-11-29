@@ -208,8 +208,8 @@ for idx1, val1 in enumerate(list_values):
             sigmaC_temp = sigmaC_.loc[val3][0]
             pd_temp = run_sims_SIS_decoupled(beta_temp, sigmaD_temp, sigmaC_temp, True)
 
-            ax[idx2, idx3].plot(pd_temp['time'], pd_temp['I'], label='Infected')
-            ax[idx2,idx3].plot(pd_temp['time'], pd_temp['C'], label='Cooperator')
+            ax[idx2, idx3].plot(pd_temp['time'], pd_temp['I'], label='Infected', color='darkred')
+            ax[idx2,idx3].plot(pd_temp['time'], pd_temp['C'], label='Cooperator', color='mediumblue')
             ax[idx2,idx3].grid()
             ax[idx2,idx3].legend()
 

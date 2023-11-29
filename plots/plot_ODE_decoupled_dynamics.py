@@ -256,6 +256,8 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
                 xticklabels=xticklabs, yticklabels=yticklabs)
     
     axes[0,2].set_title('# Peaks of Infected')
+    axes[0,2].set_yticks(yticks, labels=yticklabs)
+    axes[0,2].set_xticks(xticks, labels=xticklabs)
     #plt.colorbar(im5, fraction=0.045, pad=0.05, ax=axes[0,2])
 
     #im6 = axes[1,2].imshow(Coscillations_, cmap='plasma')

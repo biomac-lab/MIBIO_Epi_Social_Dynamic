@@ -48,10 +48,12 @@ def find_stability_time(sim, epsilon):
     stable_sim = sim[np.abs(sim-last_val) <= epsilon]
     return len(stable_sim)  
 
-def graph_simulationFeatures(path_to_results, name_file):
+def graph_simulationFeatures(path_to_results, name_file, folder):
     df_temp = pd.read_csv(path_to_results+'.csv', index_col=0)
-    I = np.array(df_temp[['I']]); S = np.array(df_temp[['S']])
-    C = np.array(df_temp[['C']]); D = np.array(df_temp[['D']])
+    I = np.array(df_temp[['I_c']]) + np.array(df_temp[['I_d']])
+    S = np.array(df_temp[['S_c']]) + np.array(df_temp[['S_d']])
+    C = np.array(df_temp[['S_c']]) + np.array(df_temp[['I_c']])
+    D = np.array(df_temp[['S_d']]) + np.array(df_temp[['I_d']])
     time = np.array(df_temp[['time']])
     beta = np.round((df_temp[['beta']].iloc[0][0]),3)
     sigmaD = np.round((df_temp[['sigma_D']].iloc[0][0]),3)
@@ -84,8 +86,12 @@ def graph_simulationFeatures(path_to_results, name_file):
     axes[1].set_ylabel('Percentage [%]')
     axes[1].set_xlabel('Time [days]')
 
-    fig.suptitle(f'${{\\beta}}$ = {beta} & ${{R_0}}$={np.round(beta/gamma,3)} \n ${{\sigma_D}}$ = {sigmaD} & ${{\sigma_C}}$={sigmaC}')
-    plt.savefig(os.path.join(main_path, 'plots', 'ODE_Simulations', name_file+'.jpeg'), dpi=500)
+    fig.suptitle(f'${{\\beta}}$ = {beta} & ${{R_0}}$={np.round(alpha*beta/gamma,3)} \n ${{\sigma_D}}$ = {sigmaD} & ${{\sigma_C}}$={sigmaC}')
+    
+    if not os.path.isdir(os.path.join(main_path, plots_path, 'ODE_Simulations', folder) ):
+                os.makedirs(os.path.join(main_path, plots_path, 'ODE_Simulations', folder))
+
+    plt.savefig(os.path.join(main_path, 'plots', 'ODE_Simulations', folder, name_file+'.jpeg'), dpi=500)
     plt.close()
 
 def graph_1D_experimentation(param_search, param_name:str, folder:str):
@@ -404,26 +410,26 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     plt.close()
 
 
-'''sim1_path = os.path.join(main_path, results_path, 
-                        '1D', 'ode_decoupled_beta_0.25_sigmaD_0.50_sigmaC_0.50')           
+sim1_path = os.path.join(main_path, results_path, 
+                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.25_sigmaD_0.50_sigmaC_0.50')           
 sim2_path = os.path.join(main_path, results_path,
-                        '1D', 'ode_decoupled_beta_0.79_sigmaD_0.50_sigmaC_0.50')
+                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.79_sigmaD_0.50_sigmaC_0.50')
 sim3_path = os.path.join(main_path, results_path, 
-                        '1D', 'ode_decoupled_beta_0.50_sigmaD_0.50_sigmaC_0.25')
+                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_0.25')
 sim4_path = os.path.join(main_path, results_path, 
-                        '1D', 'ode_decoupled_beta_0.50_sigmaD_0.50_sigmaC_0.79')
+                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_0.79')
 sim5_path = os.path.join(main_path, results_path,
-                        '1D', 'ode_decoupled_beta_0.50_sigmaD_0.25_sigmaC_0.50')
+                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.50_sigmaD_0.25_sigmaC_0.50')
 sim6_path = os.path.join(main_path, results_path,
-                        '1D', 'ode_decoupled_beta_0.50_sigmaD_0.79_sigmaC_0.50')
+                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.50_sigmaD_0.79_sigmaC_0.50')
 
-graph_simulationFeatures(sim1_path, 'feats_ode_decoupled_beta_0.25_sigmaD_0.50_sigmaC_0.50')
-graph_simulationFeatures(sim2_path, 'feats_ode_decoupled_beta_0.79_sigmaD_0.50_sigmaC_0.50')
-graph_simulationFeatures(sim3_path, 'feats_ode_decoupled_beta_0.50_sigmaD_0.50_sigmaC_0.25')
-graph_simulationFeatures(sim4_path, 'feats_ode_decoupled_beta_0.50_sigmaD_0.50_sigmaC_0.79')
-graph_simulationFeatures(sim5_path, 'feats_ode_decoupled_beta_0.50_sigmaD_0.25_sigmaC_0.50')
-graph_simulationFeatures(sim6_path, 'feats_ode_decoupled_beta_0.50_sigmaD_0.79_sigmaC_0.50')
-'''
+graph_simulationFeatures(sim1_path, 'feats_ode_coupled_beta_0.25_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
+graph_simulationFeatures(sim2_path, 'feats_ode_coupled_beta_0.79_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
+graph_simulationFeatures(sim3_path, 'feats_ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_0.25', 'dynamicSI_SCPA')
+graph_simulationFeatures(sim4_path, 'feats_ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_0.79', 'dynamicSI_SCPA')
+graph_simulationFeatures(sim5_path, 'feats_ode_coupled_beta_0.50_sigmaD_0.25_sigmaC_0.50', 'dynamicSI_SCPA')
+graph_simulationFeatures(sim6_path, 'feats_ode_coupled_beta_0.50_sigmaD_0.79_sigmaC_0.50', 'dynamicSI_SCPA')
+
 
 beta_search = np.linspace(beta_.loc['min'][0], beta_.loc['max'][0], int(beta_.loc['num'][0]))
 sigmaD_search = np.linspace(sigmaD_.loc['min'][0], sigmaD_.loc['max'][0], int(sigmaD_.loc['num'][0]))
