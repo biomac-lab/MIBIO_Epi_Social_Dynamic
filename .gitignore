@@ -1,2 +1,6 @@
 #MacOS Files
 .DS_Store
+run/.DS_Store
+plots/.DS_Store
+results
+
