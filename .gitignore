@@ -2,5 +2,7 @@
 .DS_Store
 run/.DS_Store
 plots/.DS_Store
-results
+results/1D
+results/2D
+results/IC
 

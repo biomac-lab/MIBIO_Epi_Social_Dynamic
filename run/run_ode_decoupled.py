@@ -10,7 +10,7 @@ config_path = os.path.join(main_path, 'config.csv')
 config_data = pd.read_csv(config_path, sep=',', header=None, index_col=0)
 results_path  = config_data.loc['results_dir'][1]
 plots_path = config_data.loc['plots_dir'][1]
-parematric_df_dir = config_data.loc['parametric_df_dir'][1]
+parematric_df_dir = config_data.loc['parametric_decoupled_df_dir'][1]
 gamma = 1/7
 
 
@@ -94,8 +94,8 @@ def run_sims_SIS_decoupled(prob_infect, sigmaD, sigmaC:float=0, everything_dynam
 
 
 def exp_1D_SIS_decoupled(param_search1, param1:str):
-    if not os.path.isdir( os.path.join(results_path, '1D') ):
-                os.makedirs(os.path.join(results_path, '1D'))
+    if not os.path.isdir( os.path.join(results_path, '1D', 'Decoupled') ):
+                os.makedirs(os.path.join(results_path, '1D', 'Decoupled'))
 
     beta_mean = beta_.loc['mean'][0]
     sigmaD_mean = sigmaD_.loc['mean'][0]
@@ -107,7 +107,7 @@ def exp_1D_SIS_decoupled(param_search1, param1:str):
             pd_var_res_ = pd_var_res.copy()
             
             pd_var_res_.to_csv(os.path.join(results_path, 
-    '1D','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p, sigmaD_mean, sigmaC_mean)))
+    '1D', 'Decoupled','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p, sigmaD_mean, sigmaC_mean)))
         print('DONE beta EXPERIMENTATION')
     elif param1 == 'sigmaD':
         for idx, p in tqdm(enumerate(param_search1)):
@@ -115,7 +115,7 @@ def exp_1D_SIS_decoupled(param_search1, param1:str):
             pd_var_res_ = pd_var_res.copy()
             
             pd_var_res_.to_csv(os.path.join(results_path, 
-    '1D','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, p, sigmaC_mean)))    
+    '1D', 'Decoupled','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, p, sigmaC_mean)))    
         print('DONE sigmaD EXPERIMENTATION')
     elif param1 == 'sigmaC':
         for idx, p in tqdm(enumerate(param_search1)):
@@ -123,13 +123,13 @@ def exp_1D_SIS_decoupled(param_search1, param1:str):
             pd_var_res_ = pd_var_res.copy()
             
             pd_var_res_.to_csv(os.path.join(results_path,
-    '1D','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, sigmaD_mean, p)))
+    '1D', 'Decoupled','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, sigmaD_mean, p)))
         print('DONE sigmaC EXPERIMENTATION')
 
 
 def exp_2D_SIS_decoupled(param_search1, param_search2, param1: str, param2: str):
-    if not os.path.isdir( os.path.join(results_path, '2D') ):
-                os.makedirs(os.path.join(results_path, '2D'))
+    if not os.path.isdir( os.path.join(results_path, '2D', 'Decoupled') ):
+                os.makedirs(os.path.join(results_path, '2D', 'Decoupled'))
     
     beta_mean = beta_.loc['mean'][0]
     sigmaD_mean = sigmaD_.loc['mean'][0]
@@ -143,7 +143,7 @@ def exp_2D_SIS_decoupled(param_search1, param_search2, param1: str, param2: str)
                         pd_var_res_ = pd_var_res.copy()
             
                         pd_var_res_.to_csv(os.path.join(results_path, 
-            '2D','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,p2, sigmaC_mean)))
+            '2D','Decoupled','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,p2, sigmaC_mean)))
         elif param2 == 'sigmaC':
              for idx1, p1 in tqdm(enumerate(param_search1)):
                  for idx2, p2 in tqdm(enumerate(param_search2)):
@@ -151,7 +151,7 @@ def exp_2D_SIS_decoupled(param_search1, param_search2, param1: str, param2: str)
                         pd_var_res_ = pd_var_res.copy()
             
                         pd_var_res_.to_csv(os.path.join(results_path, 
-            '2D','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,sigmaD_mean,p2)))
+            '2D','Decoupled','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,sigmaD_mean,p2)))
 
     elif param1 == 'sigmaD':
         if param2 == 'beta':
@@ -161,7 +161,7 @@ def exp_2D_SIS_decoupled(param_search1, param_search2, param1: str, param2: str)
                     pd_var_res_ = pd_var_res.copy()
             
                     pd_var_res_.to_csv(os.path.join(results_path, 
-            '2D','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p2,p1,sigmaC_mean)))
+            '2D','Decoupled','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p2,p1,sigmaC_mean)))
 
         elif param2 == 'sigmaC':
             for idx1, p1 in tqdm(enumerate(param_search1)):
@@ -170,7 +170,7 @@ def exp_2D_SIS_decoupled(param_search1, param_search2, param1: str, param2: str)
                     pd_var_res_ = pd_var_res.copy()
             
                     pd_var_res_.to_csv(os.path.join(results_path, 
-            '2D','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p1,p2)))
+            '2D','Decoupled','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p1,p2)))
 
     elif param1 == 'sigamC':
         if param2 == 'beta':
@@ -180,7 +180,7 @@ def exp_2D_SIS_decoupled(param_search1, param_search2, param1: str, param2: str)
                     pd_var_res_ = pd_var_res.copy()
             
                     pd_var_res_.to_csv(os.path.join(results_path, 
-            '2D','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p2,sigmaD_mean,p1)))
+            '2D','Decoupled','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p2,sigmaD_mean,p1)))
 
         elif param2 == 'sigmaD':
             for idx1, p1 in tqdm(enumerate(param_search1)):
@@ -189,7 +189,7 @@ def exp_2D_SIS_decoupled(param_search1, param_search2, param1: str, param2: str)
                     pd_var_res_ = pd_var_res.copy()
             
                     pd_var_res_.to_csv(os.path.join(results_path, 
-            '2D','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p2,p1)))
+            '2D','Decoupled','ode_decoupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p2,p1)))
 
 df_parametric = pd.read_csv(os.path.join(main_path, parematric_df_dir), index_col=0)
 beta_ = df_parametric[['beta']]
@@ -220,10 +220,10 @@ for idx1, val1 in enumerate(list_values):
             if idx2 == 2:
                 ax[idx2,idx3].set_xlabel('Time [days]') 
 
-    if not os.path.isdir( os.path.join(plots_path, 'ODE_Simulations') ):
-                os.makedirs(os.path.join(plots_path, 'ODE_Simulations'))
+    if not os.path.isdir( os.path.join(plots_path, 'ODE_Simulations', 'Decoupled') ):
+                os.makedirs(os.path.join(plots_path, 'ODE_Simulations', 'Decoupled'))
     
-    plt.savefig(os.path.join(plots_path, 'ODE_Simulations',
+    plt.savefig(os.path.join(plots_path, 'ODE_Simulations', 'Decoupled',
                              'simu_ode_decoupled_beta_{:0.2f}.jpeg'.format(beta_temp)), dpi=400)
     plt.close()
 

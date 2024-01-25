@@ -1,4 +1,5 @@
 run_dir,run
 plots_dir,plots
 results_dir,results
-parametric_df_dir,run/param_search/parametric_coupled_exp.csv
+parametric_coupled_df_dir,run/param_search/parametric_coupled_exp.csv
+parametric_decoupled_df_dir,run/param_search/parametric_decoupled_exp.csv

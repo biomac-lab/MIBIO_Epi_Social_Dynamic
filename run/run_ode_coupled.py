@@ -11,7 +11,7 @@ config_path = os.path.join(main_path, 'config.csv')
 config_data = pd.read_csv(config_path, sep=',', header=None, index_col=0)
 results_path  = config_data.loc['results_dir'][1]
 plots_path = config_data.loc['plots_dir'][1]
-parematric_df_dir = config_data.loc['parametric_df_dir'][1]
+parematric_df_dir = config_data.loc['parametric_coupled_df_dir'][1]
 gamma = 1/7
 alpha = 0.2
 reward_matrix = np.array([[1.1, 1.1, 0.8, 0.7], [1.3, 1.3, 0.5, 0.3], [2, 1.8, 1, 1], [1.6, 1.4, 1, 1]])
@@ -359,13 +359,13 @@ list_params = ['beta', 'sigmaD', 'sigmaC']
 
 IC_search = np.linspace(d_fract_.loc['min'][0], d_fract_.loc['max'][0], int(d_fract_.loc['num'][0]))
 
-for key_case, val_case in tqdm(dict_scenarios.items()):
+'''for key_case, val_case in tqdm(dict_scenarios.items()):
     for idx, param_name in enumerate(list_params):
         df_temp = df_parametric[[param_name]]
         param_search = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
         exp_1D_SIS_coupled(0.9, param_search, param_name, key_case, val_case[0], val_case[1], val_case[2], val_case[3], val_case[4])
         exp_IC_SIS_coupled(IC_search, param_search, param_name, key_case, val_case[0], val_case[1], val_case[2], val_case[3], val_case[4])
-
+'''
 print('DONE 1D Experimentations')
 
 for key_case, val_case in tqdm(dict_scenarios.items()):
