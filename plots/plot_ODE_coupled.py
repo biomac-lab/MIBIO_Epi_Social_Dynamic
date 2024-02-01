@@ -479,16 +479,17 @@ def compareModels_2D_experimentation(folder1:str, folder2:str, param_search1, pa
             Ioscillations_2[idx1, idx2] = count_oscillations(np.array(df_temp2[['I']])[:,0], 0.001)[1]
             Coscillations_2[idx1, idx2] = count_oscillations(np.array(df_temp2[['C']])[:,0], 0.001)[1]
     
-    MAD_Imax = np.mean(np.abs(Imax_1 - Imax_2))
-    MAD_Tmax = np.mean(np.abs(Tmax_1 - Tmax_2))
-    MAD_Ifinal = np.mean(np.abs(Ifinal_1  - Ifinal_2))
-    MAD_Cfinal = np.mean(np.abs(Cfinal_1 - Cfinal_2))
-    MAD_Iosc = np.mean(np.abs(Ioscillations_1 - Ioscillations_2))
-    MAD_Cosc = np.mean(np.abs(Coscillations_1 - Coscillations_2))
+    MAD_Imax = np.mean(np.sqrt((Imax_1 - Imax_2)**2))
+    MAD_Tmax = np.mean(np.sqrt((Tmax_1 - Tmax_2)**2))
+    MAD_Ifinal = np.mean(np.sqrt((Ifinal_1  - Ifinal_2)**2))
+    MAD_Cfinal = np.mean(np.sqrt((Cfinal_1 - Cfinal_2)**2))
+    MAD_Iosc = np.mean(np.sqrt((Ioscillations_1 - Ioscillations_2)**2))
+    MAD_Cosc = np.mean(np.sqrt((Coscillations_1 - Coscillations_2)**2))
 
     MAD_array = [folder2, MAD_Imax, MAD_Tmax, MAD_Ifinal, MAD_Cfinal, MAD_Iosc, MAD_Cosc]
 
     return MAD_array
+
 
 '''
 sim1_path = os.path.join(main_path, results_path, 
@@ -565,8 +566,9 @@ for idx1, param_name1 in enumerate(list_params):
     if not os.path.isdir(os.path.join(results_path, 'Diff')):
          os.makedirs(os.path.join(results_path, 'Diff'))
 
-    df_temp_full.to_csv(os.path.join(results_path, 'Diff', 'MAD_FullRemoval_{}_{}.csv'.format(param_name1, param_name2)))
-    df_temp_null.to_csv(os.path.join(results_path, 'Diff', 'MAD_NullAddition_{}_{}.csv'.format(param_name1, param_name2)))
+    df_temp_full.to_csv(os.path.join(results_path, 'Diff', 'MSE_FullRemoval_{}_{}.csv'.format(param_name1, param_name2)))
+    df_temp_null.to_csv(os.path.join(results_path, 'Diff', 'MSE_NullAddition_{}_{}.csv'.format(param_name1, param_name2)))
 
+    
 
 print('DONE COMPARISON OF MODELS')
