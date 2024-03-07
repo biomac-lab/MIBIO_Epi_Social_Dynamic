@@ -22,13 +22,14 @@ sigmaC_ = df_parametric[['sigmaC']]
 d_fract_ = df_parametric[['d_fract']]
 
 list_values = ['low', 'mean', 'high']
+
 '''
 dict_scenarios = {'static':(False, False, False, False, False), 
                   'dynamicS':(False, False, False, False, True), 
                   'dynamicS_SC':(True, False, False, False, True), 
                   'dynamicSI_SC':(True, False, False, True, True), 
                   'dynamicSI_SCPA':(True, True, False, True, True)}
-'''
+
 dict_scenarios = {'Null':(False, False, False, True, True),
                     'Null+SP':(False, False, True, True, True),
                     'Null+SC':(True, False, False, True, True),
@@ -37,6 +38,17 @@ dict_scenarios = {'Null':(False, False, False, True, True),
                     'Full-SP':(True, True, False, True, True),
                     'Full-SC':(False, True, True, True, True),
                     'Full-PA':(True, False, True, True, True)}
+'''
+                    
+#Selfcare - Public Awareness - Social Pressure - Dynamic I - Dynamic S
+dict_scenarios = {'Null':(False, False, False, True, True),
+                  'SP':(False, False, True, True, True),
+                  'SC':(True, False, False, True, True),
+                  'PA':(False, True, False, True, True),
+                  'SP+SC':(True, False, True, True, True),
+                  'SP+PA':(False, True, True, True, True),
+                  'PA+SC':(True, True, False, True, True),
+                  'SC+SP+PA':(True, True, True, True, True)}
 
 def SIS_coupled(variables, t, beta_max, alpha, gamma, A, sigmaD, sigmaC, 
                 selfcare:bool=True, public_awareness:bool=True, social_pressure:bool=True, dynamic_I:bool= True, dynamic_S:bool=True):
@@ -105,7 +117,7 @@ def run_sims_SIS_coupled(d_fract, prob_infect, alpha, A, sigmaD, sigmaC:float=0,
     y0 = [S_c/N, S_d/N, I_c/N, I_d/N]
 
     t_max = 300
-    t = np.linspace(0, t_max, t_max*5)
+    t = np.linspace(0, t_max, t_max*8)
     gamma = 1/7
 
     y = odeint(SIS_coupled, y0, t, args=(prob_infect, alpha, gamma, A, sigmaD, sigmaC, selfcare, public_awareness, social_pressure, dynamic_I, dynamic_S))
@@ -133,14 +145,14 @@ def run_sims_SIS_coupled(d_fract, prob_infect, alpha, A, sigmaD, sigmaC:float=0,
 
     return pd_var
 
-def exp_1D_SIS_coupled(d_fract, param_search1, param1:str, folder:str, 
+def exp_1D_SIS_coupled(d_fract, prob_infect, param_search1, param1:str, folder:str, 
                        selfcare=True, public_awareness=True, social_pressure=True, dynamic_I=True, dynamic_S=True):
     if not os.path.isdir( os.path.join(results_path, '1D', folder) ):
         os.makedirs(os.path.join(results_path, '1D', folder))
 
-    beta_mean = beta_.loc['mean'][0]
-    sigmaD_mean = sigmaD_.loc['mean'][0]
-    sigmaC_mean = sigmaC_.loc['mean'][0]
+    beta_mean = prob_infect
+    sigmaD_mean = int(sigmaD_.iloc[5])
+    sigmaC_mean = int(sigmaC_.iloc[5])
 
     if param1 == 'beta':    
         for idx, p in (enumerate(param_search1)):
@@ -167,14 +179,14 @@ def exp_1D_SIS_coupled(d_fract, param_search1, param1:str, folder:str,
     '1D', folder,'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean, sigmaD_mean, p)))
         print('DONE sigmaC EXPERIMENTATION')
 
-def exp_2D_SIS_coupled(d_fract, param_search1, param_search2, param1: str, param2: str, folder:str, 
+def exp_2D_SIS_coupled(d_fract, prob_infect, param_search1, param_search2, param1: str, param2: str, folder:str, 
                        selfcare=True, public_awareness=True, social_pressure=True, dynamic_I=True, dynamic_S=True):
     if not os.path.isdir( os.path.join(results_path, '2D', folder) ):
                 os.makedirs(os.path.join(results_path, '2D', folder))
     
-    beta_mean = beta_.loc['mean'][0]
-    sigmaD_mean = sigmaD_.loc['mean'][0]
-    sigmaC_mean = sigmaC_.loc['mean'][0]
+    beta_mean = prob_infect
+    sigmaD_mean = int(sigmaD_.iloc[5])
+    sigmaC_mean = int(sigmaC_.iloc[5])
     
     if param1 == 'beta':
         if param2 == 'sigmaD':
@@ -182,7 +194,7 @@ def exp_2D_SIS_coupled(d_fract, param_search1, param_search2, param1: str, param
                  for idx2, p2 in (enumerate(param_search2)):
                         pd_var_res = run_sims_SIS_coupled(d_fract, p1, alpha, reward_matrix,p2,sigmaC_mean,selfcare, public_awareness, social_pressure, dynamic_I, dynamic_S)
                         pd_var_res_ = pd_var_res.copy()
-            
+
                         pd_var_res_.to_csv(os.path.join(results_path, 
             '2D', folder,'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,p2, sigmaC_mean)))
         elif param2 == 'sigmaC':
@@ -190,7 +202,7 @@ def exp_2D_SIS_coupled(d_fract, param_search1, param_search2, param1: str, param
                  for idx2, p2 in (enumerate(param_search2)):
                         pd_var_res = run_sims_SIS_coupled(d_fract, p1, alpha, reward_matrix,sigmaD_mean,p2,selfcare,public_awareness, social_pressure,dynamic_I,dynamic_S)
                         pd_var_res_ = pd_var_res.copy()
-            
+
                         pd_var_res_.to_csv(os.path.join(results_path, 
             '2D', folder,'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(p1,sigmaD_mean,p2)))
 
@@ -209,11 +221,11 @@ def exp_2D_SIS_coupled(d_fract, param_search1, param_search2, param1: str, param
                 for idx2, p2 in (enumerate(param_search2)):
                     pd_var_res = run_sims_SIS_coupled(d_fract, beta_mean,alpha,reward_matrix,p1,p2,selfcare,public_awareness, social_pressure,dynamic_I,dynamic_S)
                     pd_var_res_ = pd_var_res.copy()
-            
+
                     pd_var_res_.to_csv(os.path.join(results_path, 
             '2D', folder,'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p1,p2)))
 
-    elif param1 == 'sigamC':
+    elif param1 == 'sigmaC':
         if param2 == 'beta':
             for idx1, p1 in (enumerate(param_search1)):
                 for idx2, p2 in (enumerate(param_search2)):
@@ -228,18 +240,18 @@ def exp_2D_SIS_coupled(d_fract, param_search1, param_search2, param1: str, param
                 for idx2, p2 in (enumerate(param_search2)):
                     pd_var_res = run_sims_SIS_coupled(d_fract, beta_mean,alpha,reward_matrix, p2, p1,selfcare,public_awareness, social_pressure,dynamic_I,dynamic_S)
                     pd_var_res_ = pd_var_res.copy()
-            
+
                     pd_var_res_.to_csv(os.path.join(results_path, 
             '2D', folder,'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}.csv'.format(beta_mean,p2,p1)))
 
-def exp_IC_SIS_coupled(initcond_search, param_search1, param1:str, folder:str,
+def exp_IC_SIS_coupled(initcond_search, prob_infect, param_search1, param1:str, folder:str,
                         selfcare=True, public_awareness=True, social_pressure=True, dynamic_I=True, dynamic_S=True):
     if not os.path.isdir( os.path.join(results_path, 'IC', folder) ):
         os.makedirs(os.path.join(results_path, 'IC', folder))
 
-    beta_mean = beta_.loc['mean'][0]
-    sigmaD_mean = sigmaD_.loc['mean'][0]
-    sigmaC_mean = sigmaC_.loc['mean'][0]
+    beta_mean = prob_infect
+    sigmaD_mean = int(sigmaD_.iloc[5])
+    sigmaC_mean = int(sigmaC_.iloc[5])
 
     if param1 == 'beta':    
         for idx, p in (enumerate(param_search1)):
@@ -280,7 +292,6 @@ def calculateR0(S_c_v, S_d_v, beta_v, alpha_v, gamma_v, sigma_c_v, t_cc_v, t_cd_
 
     return R0
 
-
 for key_case, val_case in tqdm(dict_scenarios.items()):
     fig, ax = plt.subplots(3, 3, figsize=(14,10))
     for idx1, val1 in enumerate(list_values):
@@ -314,7 +325,7 @@ for key_case, val_case in tqdm(dict_scenarios.items()):
                             'simu_ode_coupled_sigmaC_{:0.2f}_sigmaD_{:0.2f}.jpeg'.format(sigmaC_temp, sigmaD_temp)), dpi=400)
     plt.close()
 
-
+'''
 for key_case, val_case in tqdm(dict_scenarios.items()):
     for idx1, val1 in enumerate(list_values):
         fig, ax = plt.subplots(3,3, figsize=(14,10))
@@ -350,41 +361,38 @@ for key_case, val_case in tqdm(dict_scenarios.items()):
         plt.savefig(os.path.join(plots_path, 'ODE_Simulations', key_case,
                                 'simu_ode_coupled_beta_{:0.2f}.jpeg'.format(beta_temp)), dpi=400)
         plt.close()
-
+'''
 print('DONE SIMPLE SIMULATIONS')
 
 ### Save results
 
-list_params = ['beta', 'sigmaD', 'sigmaC']
+#list_params = ['beta', 'sigmaD', 'sigmaC']
+list_params = ['sigmaD', 'sigmaC']
 
-IC_search = np.linspace(d_fract_.loc['min'][0], d_fract_.loc['max'][0], int(d_fract_.loc['num'][0]))
+IC_search = np.linspace(d_fract_.iloc[0,0], d_fract_.iloc[1,0], int(d_fract_.iloc[2,0]))
+beta_search = np.linspace(beta_.iloc[0,0], beta_.iloc[1,0], int(beta_.iloc[2,0]))
+sigmaD_search = np.linspace(sigmaD_.iloc[0,0], sigmaD_.iloc[1,0], int(sigmaD_.iloc[2,0]))
+sigmaC_search = np.linspace(sigmaC_.iloc[0,0], sigmaC_.iloc[1,0], int(sigmaC_.iloc[2,0]))
 
-'''for key_case, val_case in tqdm(dict_scenarios.items()):
-    for idx, param_name in enumerate(list_params):
-        df_temp = df_parametric[[param_name]]
-        param_search = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
-        exp_1D_SIS_coupled(0.9, param_search, param_name, key_case, val_case[0], val_case[1], val_case[2], val_case[3], val_case[4])
-        exp_IC_SIS_coupled(IC_search, param_search, param_name, key_case, val_case[0], val_case[1], val_case[2], val_case[3], val_case[4])
-'''
+
+for beta_temp in tqdm(beta_search):
+    for key_case, val_case in dict_scenarios.items():
+        for idx, param_name in enumerate(list_params):
+            df_temp = df_parametric[[param_name]]
+            param_search = np.linspace(df_temp.iloc[0,0], df_temp.iloc[1,0], int(df_temp.iloc[2,0]))
+            exp_1D_SIS_coupled(0.9, beta_temp, param_search, param_name, key_case, val_case[0], val_case[1], val_case[2], val_case[3], val_case[4])
+            exp_IC_SIS_coupled(IC_search, beta_temp, param_search, param_name, key_case, val_case[0], val_case[1], val_case[2], val_case[3], val_case[4])
+
 print('DONE 1D Experimentations')
+print('DONE IC Experimentations')
 
-for key_case, val_case in tqdm(dict_scenarios.items()):
-    for idx1, param_name1 in enumerate(list_params):
-        df_temp = df_parametric[[param_name1]]
-        param_search1 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
-
-        list_temp = list_params.copy()
-        list_temp.remove(param_name1)
-        for idx2, param_name2 in enumerate(list_temp):
-            df_temp = df_parametric[[param_name2]]
-            param_search2 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
-
-            exp_2D_SIS_coupled(0.9, param_search1, param_search2, param_name1, param_name2, key_case, val_case[0], val_case[1], val_case[2], val_case[3], val_case[4])
-            print(f'Finish {param_name1}-{param_name2} Experimentation')
+'''for beta_temp in tqdm(beta_search):
+    for key_case, val_case in dict_scenarios.items():
+        exp_2D_SIS_coupled(0.9, beta_temp, sigmaC_search, sigmaD_search, 'sigmaC', 'sigmaD', key_case, val_case[0], val_case[1], val_case[2], val_case[3], val_case[4])
+        print(f'Finish {key_case} scenario')
 
 print('DONE 2D Experimentations')
-
-
+'''
 #TODO Finish this function
 #def exp_3D_SIS_replicator():
 

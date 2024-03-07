@@ -1,5 +1,4 @@
 ##
-
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -8,7 +7,6 @@ import os
 from tqdm import tqdm
 from scipy.signal import find_peaks
 import seaborn as sns
-
 
 main_path = os.path.join(os.path.split(os.getcwd())[0],'Epi_Social_Dynamic')
 config_path = os.path.join(main_path,'config.csv')
@@ -30,25 +28,18 @@ beta_ = df_parametric[['beta']]
 sigmaD_ = df_parametric[['sigmaD']]
 sigmaC_ = df_parametric[['sigmaC']]
 d_fract_ = df_parametric[['d_fract']]
-list_params = ['beta', 'sigmaD', 'sigmaC']
+#list_params = ['beta', 'sigmaD', 'sigmaC']
+list_params = ['sigmaD', 'sigmaC']
 
-'''
-dict_scenarios = {'static':(False, False, False, False, False), 
-                  'dynamicS':(False, False, False, False, True), 
-                  'dynamicS_SC':(True, False, False, False, True), 
-                  'dynamicSI_SC':(True, False, False, True, True), 
-                  'dynamicSI_SCPA':(True, True, False, True, True)}
-'''
+#Selfcare - Public Awareness - Social Pressure - Dynamic I - Dynamic S
 dict_scenarios = {'Null':(False, False, False, True, True),
-                    'Null+SP':(False, False, True, True, True),
-                    'Null+SC':(True, False, False, True, True),
-                    'Null+PA':(False, True, False, True, True),
-                  'Full':(True, True, True, True, True),
-                    'Full-SP':(True, True, False, True, True),
-                    'Full-SC':(False, True, True, True, True),
-                    'Full-PA':(True, False, True, True, True)}
-
-
+                  'SP':(False, False, True, True, True),
+                  'SC':(True, False, False, True, True),
+                  'PA':(False, True, False, True, True),
+                  'SP+SC':(True, False, True, True, True),
+                  'SP+PA':(False, True, True, True, True),
+                  'PA+SC':(True, True, False, True, True),
+                  'SC+SP+PA':(True, True, True, True, True)}
 
 def count_oscillations(sim, min_prominence):
     idx_peaks, dict_peaks = find_peaks(sim, prominence=min_prominence)
@@ -105,7 +96,7 @@ def graph_simulationFeatures(path_to_results, name_file, folder):
     plt.savefig(os.path.join(main_path, 'plots', 'ODE_Simulations', folder, name_file+'.jpeg'), dpi=500)
     plt.close()
 
-def graph_1D_experimentation(param_search, param_name:str, folder:str):
+def graph_1D_experimentation(prob_infect, param_search, param_name:str, folder:str):
     Imax_ = np.zeros(param_search.shape)
     Tmax_ = np.zeros(param_search.shape)
     Ifinal_ = np.zeros(param_search.shape)
@@ -117,9 +108,9 @@ def graph_1D_experimentation(param_search, param_name:str, folder:str):
         if param_name == 'beta':
             str_file = 'ode_coupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_0.50'.format(p)  
         elif param_name == 'sigmaD':
-            str_file = 'ode_coupled_beta_0.50_sigmaD_{:0.2f}_sigmaC_0.50'.format(p)
+            str_file = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_0.50'.format(prob_infect,p)
         else:
-            str_file = 'ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_{:0.2f}'.format(p)
+            str_file = 'ode_coupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_{:0.2f}'.format(prob_infect, p)
         path_to_results = os.path.join(results_path, '1D', folder, str_file+'.csv')
         df_temp = pd.read_csv(path_to_results, index_col=0)
         df_temp['I'] = df_temp['I_c']+df_temp['I_d']
@@ -140,6 +131,7 @@ def graph_1D_experimentation(param_search, param_name:str, folder:str):
     else:
          str_xlabel = f'${{\sigma_C}}$'
 
+    fig.suptitle('Beta = {:0.2f}'.format(prob_infect))
     ax[0,0].plot(param_search, Imax_)
     ax[0,0].set_title('Max. Infected')
     ax[0,0].grid()
@@ -170,7 +162,7 @@ def graph_1D_experimentation(param_search, param_name:str, folder:str):
     if not os.path.isdir( os.path.join(plots_path, '1D', folder) ):
                 os.makedirs(os.path.join(plots_path, '1D', folder))
     
-    plt.savefig(os.path.join(plots_path, '1D', folder,'plot_coupled_features_{}_exp.jpeg'.format(param_name)), dpi=450)
+    plt.savefig(os.path.join(plots_path, '1D', folder,'plot_coupled_features_beta_{:0.2f}_{}_exp.jpeg'.format(prob_infect,param_name)), dpi=450)
     plt.close()
 
 def graph_IC_experimentation(initcond_search, param_search, param_name:str, folder:str):
@@ -290,7 +282,7 @@ def graph_IC_experimentation(initcond_search, param_search, param_name:str, fold
     plt.savefig(os.path.join(plots_path, 'IC', folder,'heatmap_coupled_features_{}_exp.jpeg'.format(param_name)), dpi=400)
     plt.close() 
 
-def graph_2D_experimentation(param_search1, param_search2, param_name1: str, param_name2: str, folder:str):
+def graph_2D_experimentation(prob_infect, param_search1, param_search2, param_name1: str, param_name2: str, folder:str):
     Imax_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
     Tmax_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
     Ifinal_ = np.zeros((param_search1.shape[0], param_search2.shape[0]))
@@ -316,12 +308,12 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
                 if param_name2 == 'beta':
                     str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_0.50'.format(p2, p1)
                 else:
-                    str_file  = 'ode_coupled_beta_0.50_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(p1, p2)
+                    str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(prob_infect,p1, p2)
             elif param_name1 == 'sigmaC':
                 if param_name2 == 'beta':
-                    str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_{:0.2f}'.format(p2, p1)
+                    str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_{:0.2f}'.format(prob_infect, p2, p1)
                 else:
-                    str_file  = 'ode_coupled_beta_0.50_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(p2, p1)
+                    str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(prob_infect,p2, p1)
 
             path_to_results = os.path.join(results_path, '2D', folder,str_file+'.csv')
             df_temp = pd.read_csv(path_to_results, index_col=0)
@@ -337,6 +329,7 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
             Coscillations_[idx1, idx2] = count_oscillations(np.array(df_temp[['C']])[:,0], 0.001)[1]
         
     fig, axes = plt.subplots(2, 3, figsize=(14,10))
+    fig.suptitle('Beta = {:0.2f}'.format(prob_infect))
     
     if param_name1 == 'beta':
          str_ylabel = f'${{\\{param_name1}}}$'
@@ -362,7 +355,10 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #im1 = axes[0,0](Imax_, cmap='plasma', vmin=0, vmax=1)
     sns.heatmap(Imax_, ax=axes[0,0], cmap='plasma', vmin=0, vmax=1, cbar=True,
                 xticklabels=xticklabs, yticklabels=yticklabs)
-    axes[0,0].set_title('Max. Infected')
+    gradient_Imax = np.gradient(Imax_)
+    meanGradient_Imax_y = np.round(np.mean(np.abs(gradient_Imax[0])),3)
+    meanGradient_Imax_x = np.round(np.mean(np.abs(gradient_Imax[1])),3)
+    axes[0,0].set_title(f'Max. Infected \n {param_name1}={meanGradient_Imax_y} & {param_name2}={meanGradient_Imax_x}')
     axes[0,0].set_ylabel(str_ylabel)
     axes[0,0].set_yticks(yticks, labels=yticklabs)
     axes[0,0].set_xticks(xticks, labels=xticklabs)
@@ -371,7 +367,10 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #im2 = axes[1,0].imshow(Tmax_, cmap='cool', vmin=0, vmax=t_max)
     sns.heatmap(Tmax_, ax=axes[1,0], cmap='spring', vmin=0, vmax=t_max, cbar=True,
                 xticklabels=xticklabs, yticklabels=yticklabs)
-    axes[1,0].set_title('Time of Max. Infected')
+    gradient_Tmax = np.gradient(Tmax_)
+    meanGradient_Tmax_y = np.round(np.mean(np.abs(gradient_Tmax[0])),3)
+    meanGradient_Tmax_x = np.round(np.mean(np.abs(gradient_Tmax[1])),3)
+    axes[1,0].set_title(f'Time of Max. Infected \n {param_name1}={meanGradient_Tmax_y} & {param_name2}={meanGradient_Tmax_x}')
     axes[1,0].set_ylabel(str_ylabel)
     axes[1,0].set_xlabel(str_xlabel)
     axes[1,0].set_yticks(yticks, labels=yticklabs)
@@ -381,7 +380,10 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #im3 = axes[0,1].imshow(Ifinal_, cmap='plasma', vmin=0, vmax=1)
     sns.heatmap(Ifinal_, ax=axes[0,1], cmap='plasma', vmin=0, vmax=1, cbar=True,
                 xticklabels=xticklabs, yticklabels=yticklabs)
-    axes[0,1].set_title('Final Infected')
+    gradient_Ifinal = np.gradient(Ifinal_)
+    meanGradient_Ifinal_y = np.round(np.mean(np.abs(gradient_Ifinal[0])),3)
+    meanGradient_Ifinal_x = np.round(np.mean(np.abs(gradient_Ifinal[1])),3)
+    axes[0,1].set_title(f'Final Infected \n {param_name1}={meanGradient_Ifinal_y} & {param_name2}={ meanGradient_Ifinal_x}')
     axes[0,1].set_yticks(yticks, labels=yticklabs)
     axes[0,1].set_xticks(xticks, labels=xticklabs)
     #plt.colorbar(im3, fraction=0.045, pad=0.05, ax=axes[0,1])
@@ -389,7 +391,10 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #im4 = axes[1,1].imshow(Cfinal_, cmap='plasma', vmin=0, vmax=1)
     sns.heatmap(Cfinal_, ax=axes[1,1], cmap='plasma', vmin=0, vmax=1, cbar=True,
                 xticklabels=xticklabs, yticklabels=yticklabs)
-    axes[1,1].set_title('Final Cooperators')
+    gradient_Cfinal = np.gradient(Cfinal_)
+    meanGradient_Cfinal_y = np.round(np.mean(np.abs(gradient_Cfinal[0])),3)
+    meanGradient_Cfinal_x = np.round(np.mean(np.abs(gradient_Cfinal[1])),3)
+    axes[1,1].set_title(f'Final Cooperators \n {param_name1}={meanGradient_Cfinal_y} & {param_name2}={meanGradient_Cfinal_x}')
     axes[1,1].set_xlabel(str_xlabel)
     axes[1,1].set_yticks(yticks, labels=yticklabs)
     axes[1,1].set_xticks(xticks, labels=xticklabs)
@@ -398,7 +403,10 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #im5 = axes[0,2].imshow(Ioscillations_, cmap='summer', vmin=0, vmax=10)
     sns.heatmap(Ioscillations_, ax=axes[0,2], cmap='summer', vmin=0, vmax=10, cbar=True,
                 xticklabels=xticklabs, yticklabels=yticklabs)
-    axes[0,2].set_title('# Peaks of Infected')
+    gradient_Iosci = np.gradient(Ioscillations_)
+    meanGradient_Iosci_y = np.round(np.mean(np.abs(gradient_Iosci[0])),3)
+    meanGradient_Iosci_x = np.round(np.mean(np.abs(gradient_Iosci[1])),3)
+    axes[0,2].set_title(f'# Peaks of Infected \n {param_name1}={meanGradient_Iosci_y} & {param_name2}={meanGradient_Iosci_x}')
     axes[0,2].set_yticks(yticks, labels=yticklabs)
     axes[0,2].set_xticks(xticks, labels=xticklabs)
     #plt.colorbar(im5, fraction=0.045, pad=0.05, ax=axes[0,2])
@@ -406,7 +414,10 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     #im6 = axes[1,2].imshow(Coscillations_, cmap='summer', vmin=0, vmax=10)
     sns.heatmap(Coscillations_, ax=axes[1,2], cmap='summer', vmin=0, vmax=10, cbar=True,
                 xticklabels=xticklabs, yticklabels=yticklabs)
-    axes[1,2].set_title('# Peaks of Cooperators')
+    gradient_Cosci = np.gradient(Coscillations_)
+    meanGradient_Cosci_y = np.round(np.mean(np.abs(gradient_Cosci[0])),3)
+    meanGradient_Cosci_x = np.round(np.mean(np.abs(gradient_Cosci[1])),3)
+    axes[1,2].set_title(f'# Peaks of Cooperators \n {param_name1}={meanGradient_Cosci_y} & {param_name2}={meanGradient_Cosci_x}')
     axes[1,2].set_xlabel(str_xlabel)
     axes[1,2].set_yticks(yticks, labels=yticklabs)
     axes[1,2].set_xticks(xticks, labels=xticklabs)
@@ -417,24 +428,26 @@ def graph_2D_experimentation(param_search1, param_search2, param_name1: str, par
     if not os.path.isdir( os.path.join(plots_path, '2D', folder) ):
                 os.makedirs(os.path.join(plots_path, '2D', folder))
     
-    plt.savefig(os.path.join(plots_path, '2D', folder,'heatmap_coupled_features_{}_{}_exp.jpeg'.format(param_name1,param_name2)), dpi=400)
+    plt.savefig(os.path.join(plots_path, '2D', folder,'heatmap_coupled_features_beta_{:0.2f}_{}_{}_exp.jpeg'.format(prob_infect,param_name1,param_name2)), dpi=400)
     plt.close()
 
-def compareModels_2D_experimentation(folder1:str, folder2:str, param_search1, param_search2, param_name1: str, param_name2: str):
+def compareModels_2D_experimentation(prob_infect, folder1:str, folder2:str, param_search1, param_search2, param_name1: str, param_name2: str):
     Imax_1 = np.zeros((param_search1.shape[0], param_search2.shape[0]))
-    Tmax_1 = np.zeros((param_search1.shape[0], param_search2.shape[0]))
-    Ifinal_1 = np.zeros((param_search1.shape[0], param_search2.shape[0]))
-    Cfinal_1 = np.zeros((param_search1.shape[0], param_search2.shape[0]))
-    Ioscillations_1 = np.zeros((param_search1.shape[0], param_search2.shape[0]))
-    Coscillations_1 = np.zeros((param_search1.shape[0], param_search2.shape[0]))
+    Tmax_1 = np.copy(Imax_1)
+    Ifinal_1 = np.copy(Imax_1)
+    Cfinal_1 = np.copy(Imax_1)
+    Ioscillations_1 = np.copy(Imax_1)
+    Coscillations_1 = np.copy(Imax_1)
 
     Imax_2 = np.zeros((param_search1.shape[0], param_search2.shape[0]))
-    Tmax_2 = np.zeros((param_search1.shape[0], param_search2.shape[0]))
-    Ifinal_2 = np.zeros((param_search1.shape[0], param_search2.shape[0]))
-    Cfinal_2 = np.zeros((param_search1.shape[0], param_search2.shape[0]))
-    Ioscillations_2 = np.zeros((param_search1.shape[0], param_search2.shape[0]))
-    Coscillations_2 = np.zeros((param_search1.shape[0], param_search2.shape[0]))
+    Tmax_2 = np.copy(Imax_2)
+    Ifinal_2 = np.copy(Imax_2)
+    Cfinal_2 = np.copy(Imax_2)
+    Ioscillations_2 = np.copy(Imax_2)
+    Coscillations_2 = np.copy(Imax_2)
     
+
+
     for idx1, p1 in enumerate(param_search1):
         for idx2, p2 in enumerate(param_search2):
             if param_name1 == 'beta':
@@ -446,12 +459,12 @@ def compareModels_2D_experimentation(folder1:str, folder2:str, param_search1, pa
                 if param_name2 == 'beta':
                     str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_0.50'.format(p2, p1)
                 else:
-                    str_file  = 'ode_coupled_beta_0.50_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(p1, p2)
+                    str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(prob_infect,p1, p2)
             elif param_name1 == 'sigmaC':
                 if param_name2 == 'beta':
                     str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_{:0.2f}'.format(p2, p1)
                 else:
-                    str_file  = 'ode_coupled_beta_0.50_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(p2, p1)
+                    str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(prob_infect,p2, p1)
 
             path_to_results1 = os.path.join(results_path, '2D', folder1,str_file+'.csv')
             df_temp1 = pd.read_csv(path_to_results1, index_col=0)
@@ -479,96 +492,99 @@ def compareModels_2D_experimentation(folder1:str, folder2:str, param_search1, pa
             Ioscillations_2[idx1, idx2] = count_oscillations(np.array(df_temp2[['I']])[:,0], 0.001)[1]
             Coscillations_2[idx1, idx2] = count_oscillations(np.array(df_temp2[['C']])[:,0], 0.001)[1]
     
-    MAD_Imax = np.mean(np.sqrt((Imax_1 - Imax_2)**2))
-    MAD_Tmax = np.mean(np.sqrt((Tmax_1 - Tmax_2)**2))
-    MAD_Ifinal = np.mean(np.sqrt((Ifinal_1  - Ifinal_2)**2))
-    MAD_Cfinal = np.mean(np.sqrt((Cfinal_1 - Cfinal_2)**2))
-    MAD_Iosc = np.mean(np.sqrt((Ioscillations_1 - Ioscillations_2)**2))
-    MAD_Cosc = np.mean(np.sqrt((Coscillations_1 - Coscillations_2)**2))
+    Imax_1_norm = Imax_1/np.sum(Imax_1)
+    Tmax_1_norm = Tmax_1/np.sum(Tmax_1)
+    Ifinal_1_norm = Ifinal_1/np.sum(Ifinal_1)
+    Cfinal_1_norm = Cfinal_1/np.sum(Cfinal_1)
+    Iosci_1_norm = Ioscillations_1/np.sum(Ioscillations_1)
+    Cosci_1_norm = Coscillations_1/np.sum(Coscillations_1)
 
+    Imax_2_norm = Imax_2/np.sum(Imax_2)
+    Tmax_2_norm = Tmax_2/np.sum(Tmax_2)
+    Ifinal_2_norm = Ifinal_2/np.sum(Ifinal_2)
+    Cfinal_2_norm = Cfinal_2/np.sum(Cfinal_2)
+    Iosci_2_norm = Ioscillations_2/np.sum(Ioscillations_2)
+    Cosci_2_norm = Coscillations_2/np.sum(Coscillations_2)
+
+    MAD_Imax = np.mean(np.abs((Imax_2 - Imax_1)))
+    MAD_Tmax = np.mean(np.abs((Tmax_2 - Tmax_1)))
+    MAD_Ifinal = np.mean(np.abs((Ifinal_2  - Ifinal_1)))
+    MAD_Cfinal = np.mean(np.abs((Cfinal_2 - Cfinal_1)))
+    MAD_Iosc = np.mean(np.abs((Ioscillations_2 - Ioscillations_1)))
+    MAD_Cosc = np.mean(np.abs((Coscillations_2 - Coscillations_1)))
+
+    ratio_Imax = np.mean((Imax_2 / Imax_1))
+    ratio_Tmax = np.mean((Tmax_2 / Tmax_1))
+    ratio_Ifinal = np.mean((Ifinal_2  / Ifinal_1))
+    ratio_Cfinal = np.mean((Cfinal_2 / Cfinal_1))
+    ratio_Iosc = np.mean((Ioscillations_2 / Ioscillations_1))
+    ratio_Cosc = np.mean((Coscillations_2 / Coscillations_1))
+
+    DKL_Imax = np.sum(Imax_2_norm*np.log(Imax_2_norm/Imax_1_norm))
+    DKL_Tmax = np.sum(Tmax_2_norm*np.log(Tmax_2_norm/Tmax_1_norm))
+    DKL_Ifinal = np.sum(Ifinal_2_norm*np.log(Ifinal_2_norm/Ifinal_1_norm))
+    DKL_Cfinal = np.sum(Cfinal_2_norm*np.log(Cfinal_2_norm/Cfinal_1_norm))
+    DKL_Iosc = np.sum(Iosci_2_norm*np.log(Iosci_2_norm/Iosci_1_norm))
+    DKL_Cosc = np.sum(Cosci_2_norm*np.log(Cosci_2_norm/Cosci_1_norm))
+
+    MSE_Imax = np.mean(np.sqrt((Imax_2 - Imax_1)**2))
+    MSE_Tmax = np.mean(np.sqrt((Tmax_2 - Tmax_1)**2))
+    MSE_Ifinal = np.mean(np.sqrt((Ifinal_2  - Ifinal_1)**2))
+    MSE_Cfinal = np.mean(np.sqrt((Cfinal_2 - Cfinal_1)**2))
+    MSE_Iosc = np.mean(np.sqrt((Ioscillations_2 - Ioscillations_1)**2))
+    MSE_Cosc = np.mean(np.sqrt((Coscillations_2 - Coscillations_1)**2))
+
+    MSE_array = [folder2, MSE_Imax, MSE_Tmax, MSE_Ifinal, MSE_Cfinal, MSE_Iosc, MSE_Cosc]
     MAD_array = [folder2, MAD_Imax, MAD_Tmax, MAD_Ifinal, MAD_Cfinal, MAD_Iosc, MAD_Cosc]
+    ratio_array = [folder2, ratio_Imax, ratio_Tmax, ratio_Ifinal, ratio_Cfinal, ratio_Iosc, ratio_Cosc]
+    DKL_array = [folder2, DKL_Imax, DKL_Tmax, DKL_Ifinal, DKL_Cfinal, DKL_Iosc, DKL_Cosc]
 
-    return MAD_array
+    return MSE_array, MAD_array, ratio_array, DKL_array
 
 
-'''
-sim1_path = os.path.join(main_path, results_path, 
-                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.25_sigmaD_0.50_sigmaC_0.50')           
-sim2_path = os.path.join(main_path, results_path,
-                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_0.50')
-sim3_path = os.path.join(main_path, results_path, 
-                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_1.50_sigmaD_0.50_sigmaC_0.50')
-sim4_path = os.path.join(main_path, results_path, 
-                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_2.00_sigmaD_0.50_sigmaC_0.50')
-sim5_path = os.path.join(main_path, results_path,
-                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_3.50_sigmaD_0.50_sigmaC_0.50')
-sim6_path = os.path.join(main_path, results_path,
-                        '1D', 'dynamicSI_SCPA', 'ode_coupled_beta_4.50_sigmaD_0.50_sigmaC_0.50')
-
-graph_simulationFeatures(sim1_path, 'feats_ode_coupled_beta_0.25_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
-graph_simulationFeatures(sim2_path, 'feats_ode_coupled_beta_0.50_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
-graph_simulationFeatures(sim3_path, 'feats_ode_coupled_beta_1.50_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
-graph_simulationFeatures(sim4_path, 'feats_ode_coupled_beta_2.00_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
-graph_simulationFeatures(sim5_path, 'feats_ode_coupled_beta_3.50_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
-graph_simulationFeatures(sim6_path, 'feats_ode_coupled_beta_4.50_sigmaD_0.50_sigmaC_0.50', 'dynamicSI_SCPA')
-'''
-
-beta_search = np.linspace(beta_.loc['min'][0], beta_.loc['max'][0], int(beta_.loc['num'][0]))
 sigmaD_search = np.linspace(sigmaD_.loc['min'][0], sigmaD_.loc['max'][0], int(sigmaD_.loc['num'][0]))
 sigmaC_search = np.linspace(sigmaC_.loc['min'][0], sigmaC_.loc['max'][0], int(sigmaC_.loc['num'][0]))
-list_paramsSearch = [beta_search, sigmaD_search, sigmaC_search]
-dict_paramSearch = {'beta': beta_search, 'sigmaD': sigmaD_search, 'sigmaC': sigmaC_search}
+#list_paramsSearch = [beta_search, sigmaD_search, sigmaC_search]
+list_paramsSearch = [sigmaD_search, sigmaC_search]
+#dict_paramSearch = {'beta': beta_search, 'sigmaD': sigmaD_search, 'sigmaC': sigmaC_search}
+dict_paramSearch = {'sigmaD': sigmaD_search, 'sigmaC': sigmaC_search}
 IC_search = np.linspace(d_fract_.loc['min'][0], d_fract_.loc['max'][0], int(d_fract_.loc['num'][0]))
 
+beta_search = np.linspace(beta_.iloc[0,0], beta_.iloc[1,0], int(beta_.iloc[2,0]))
+sigmaC_search = np.linspace(sigmaC_.iloc[0,0], sigmaC_.iloc[1,0], int(sigmaC_.iloc[2,0]))
+sigmaD_search = np.linspace(sigmaD_.iloc[0,0], sigmaD_.iloc[1,0], int(sigmaD_.iloc[2,0]))
+
+'''for beta_temp in tqdm(beta_search):
+    for key_case, val_case in dict_scenarios.items():
+        for idx, param in enumerate(list_params):
+            graph_1D_experimentation(beta_temp, list_paramsSearch[idx], param, key_case)
+            graph_IC_experimentation(IC_search, list_paramsSearch[idx], param, key_case)
 '''
-for key_case, val_case in dict_scenarios.items():
-    for idx, param in enumerate(list_params):
-        graph_1D_experimentation(list_paramsSearch[idx], param, key_case)
-        graph_IC_experimentation(IC_search, list_paramsSearch[idx], param, key_case)
+for beta_temp in tqdm(beta_search):
+    for key_case, val_case in dict_scenarios.items():
+        graph_2D_experimentation(beta_temp, sigmaC_search, sigmaD_search, 'sigmaC', 'sigmaD', key_case)
 
-for key_case, val_case in dict_scenarios.items():
-    for idx1, param_name1 in enumerate(list_params):
-            df_temp = df_parametric[[param_name1]]
-            param_search1 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
 
-            list_temp = list_params.copy()
-            list_temp.remove(param_name1)
-            for idx2, param_name2 in enumerate(list_temp):
-                df_temp = df_parametric[[param_name2]]
-                param_search2 = np.linspace(df_temp.loc['min'][0], df_temp.loc['max'][0], int(df_temp.loc['num'][0]))
-                graph_2D_experimentation(param_search1, param_search2, param_name1, param_name2, key_case)
-      '''
-phenomena = ['SP','PA','SC']
+phenomena = ['SP','PA','SC','SP+PA','SP+SC','PA+SC','SC+SP+PA']
+for beta_temp in tqdm(beta_search):
+    dfMSE_temp_null = pd.DataFrame(columns=['Model', 'Imax', 'Tmax', 'Ifinal', 'Cfinal', 'Iosc', 'Cosc'])
+    dfMAD_temp_null = pd.DataFrame(columns=['Model', 'Imax', 'Tmax', 'Ifinal', 'Cfinal', 'Iosc', 'Cosc'])  
+    dfRatio_temp_null = pd.DataFrame(columns=['Model', 'Imax', 'Tmax', 'Ifinal', 'Cfinal', 'Iosc', 'Cosc'])
+    dfDKL_temp_null = pd.DataFrame(columns=['Model', 'Imax', 'Tmax', 'Ifinal', 'Cfinal', 'Iosc', 'Cosc']) 
 
-for idx1, param_name1 in enumerate(list_params):
-    list_temp = list_params.copy()
-    list_temp.remove(param_name1)
-    param_search1 = dict_paramSearch[param_name1]
+    for pheno in phenomena:
+        array_null = compareModels_2D_experimentation(beta_temp,'Null', pheno, sigmaC_search, sigmaD_search, 'sigmaC', 'sigmaD')
+        dfMSE_temp_null.loc[len(dfMSE_temp_null)] = array_null[0]
+        dfMAD_temp_null.loc[len(dfMAD_temp_null)] = array_null[1]
+        dfRatio_temp_null.loc[len(dfRatio_temp_null)] = array_null[2]
+        dfDKL_temp_null.loc[len(dfDKL_temp_null)] = array_null[3]
 
-    for idx2, param_name2 in enumerate(list_temp):
-        param_search2 = dict_paramSearch[param_name2]
-        folder_null = 'Null'
-        folder_full = 'Full'
+        if not os.path.isdir(os.path.join(results_path, 'Diff')):
+            os.makedirs(os.path.join(results_path, 'Diff'))
 
-        df_temp_null = pd.DataFrame(columns=['Model', 'Imax', 'Tmax', 'Ifinal', 'Cfinal', 'Iosc', 'Cosc'])
-        df_temp_full = pd.DataFrame(columns=['Model', 'Imax', 'Tmax', 'Ifinal', 'Cfinal', 'Iosc', 'Cosc'])  
-
-        for pheno in phenomena:
-            folder_minus = folder_full+'-'+pheno
-            folder_plus  = folder_null+'+'+pheno
-
-            array_null = compareModels_2D_experimentation(folder_null, folder_plus, param_search1, param_search2, param_name1, param_name2)
-            array_full = compareModels_2D_experimentation(folder_full, folder_minus, param_search1, param_search2, param_name1, param_name2)
-            
-            df_temp_null.loc[len(df_temp_null)] = array_null
-            df_temp_full.loc[len(df_temp_full)] = array_full
-
-    if not os.path.isdir(os.path.join(results_path, 'Diff')):
-         os.makedirs(os.path.join(results_path, 'Diff'))
-
-    df_temp_full.to_csv(os.path.join(results_path, 'Diff', 'MSE_FullRemoval_{}_{}.csv'.format(param_name1, param_name2)))
-    df_temp_null.to_csv(os.path.join(results_path, 'Diff', 'MSE_NullAddition_{}_{}.csv'.format(param_name1, param_name2)))
-
-    
+        dfMSE_temp_null.to_csv(os.path.join(results_path, 'Diff', 'MSE_NullAddition_beta_{:0.2f}_{}_{}.csv'.format(beta_temp,'sigmaC', 'sigmaD')))
+        dfMAD_temp_null.to_csv(os.path.join(results_path, 'Diff', 'MAD_NullAddition_beta_{:0.2f}_{}_{}.csv'.format(beta_temp,'sigmaC', 'sigmaD')))
+        dfRatio_temp_null.to_csv(os.path.join(results_path, 'Diff', 'Ratio_NullAddition_beta_{:0.2f}_{}_{}.csv'.format(beta_temp,'sigmaC', 'sigmaD')))
+        dfDKL_temp_null.to_csv(os.path.join(results_path, 'Diff', 'DKL_NullAddition_beta_{:0.2f}_{}_{}.csv'.format(beta_temp,'sigmaC', 'sigmaD')))
 
 print('DONE COMPARISON OF MODELS')
