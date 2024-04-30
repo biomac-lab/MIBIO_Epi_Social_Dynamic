@@ -11,11 +11,12 @@ config_path = os.path.join(main_path, 'config.csv')
 config_data = pd.read_csv(config_path, sep=',', header=None, index_col=0)
 results_path  = config_data.loc['results_dir'][1]
 plots_path = config_data.loc['plots_dir'][1]
-parematric_df_dir = config_data.loc['parametric_coupled_df_dir'][1]
+#paramatric_df_dir = config_data.loc['parametric_coupled_df_dir'][1]
+parametric_df_dir = config_data.loc['parametric_coupled_paper_dir'][1]
 gamma = 1/7
 alpha = 0.2
 reward_matrix = np.array([[1.1, 1.1, 0.8, 0.7], [1.3, 1.3, 0.5, 0.3], [2, 1.8, 1, 1], [1.6, 1.4, 1, 1]])
-df_parametric = pd.read_csv(os.path.join(main_path, parematric_df_dir), index_col=0)
+df_parametric = pd.read_csv(os.path.join(main_path, parametric_df_dir), index_col=0)
 beta_ = df_parametric[['beta']]
 sigmaD_ = df_parametric[['sigmaD']]
 sigmaC_ = df_parametric[['sigmaC']]
@@ -116,7 +117,7 @@ def run_sims_SIS_coupled(d_fract, prob_infect, alpha, A, sigmaD, sigmaC:float=0,
 
     y0 = [S_c/N, S_d/N, I_c/N, I_d/N]
 
-    t_max = 300
+    t_max = 500
     t = np.linspace(0, t_max, t_max*8)
     gamma = 1/7
 
@@ -374,7 +375,7 @@ beta_search = np.linspace(beta_.iloc[0,0], beta_.iloc[1,0], int(beta_.iloc[2,0])
 sigmaD_search = np.linspace(sigmaD_.iloc[0,0], sigmaD_.iloc[1,0], int(sigmaD_.iloc[2,0]))
 sigmaC_search = np.linspace(sigmaC_.iloc[0,0], sigmaC_.iloc[1,0], int(sigmaC_.iloc[2,0]))
 
-
+'''
 for beta_temp in tqdm(beta_search):
     for key_case, val_case in dict_scenarios.items():
         for idx, param_name in enumerate(list_params):
@@ -382,17 +383,17 @@ for beta_temp in tqdm(beta_search):
             param_search = np.linspace(df_temp.iloc[0,0], df_temp.iloc[1,0], int(df_temp.iloc[2,0]))
             exp_1D_SIS_coupled(0.9, beta_temp, param_search, param_name, key_case, val_case[0], val_case[1], val_case[2], val_case[3], val_case[4])
             exp_IC_SIS_coupled(IC_search, beta_temp, param_search, param_name, key_case, val_case[0], val_case[1], val_case[2], val_case[3], val_case[4])
-
+'''
 print('DONE 1D Experimentations')
 print('DONE IC Experimentations')
 
-'''for beta_temp in tqdm(beta_search):
+for beta_temp in tqdm(beta_search):
     for key_case, val_case in dict_scenarios.items():
         exp_2D_SIS_coupled(0.9, beta_temp, sigmaC_search, sigmaD_search, 'sigmaC', 'sigmaD', key_case, val_case[0], val_case[1], val_case[2], val_case[3], val_case[4])
         print(f'Finish {key_case} scenario')
 
 print('DONE 2D Experimentations')
-'''
+
 #TODO Finish this function
 #def exp_3D_SIS_replicator():
 

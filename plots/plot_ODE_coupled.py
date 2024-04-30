@@ -542,19 +542,19 @@ def compareModels_2D_experimentation(prob_infect, folder1:str, folder2:str, para
     return MSE_array, MAD_array, ratio_array, DKL_array
 
 
-sigmaD_search = np.linspace(sigmaD_.loc['min'][0], sigmaD_.loc['max'][0], int(sigmaD_.loc['num'][0]))
-sigmaC_search = np.linspace(sigmaC_.loc['min'][0], sigmaC_.loc['max'][0], int(sigmaC_.loc['num'][0]))
-#list_paramsSearch = [beta_search, sigmaD_search, sigmaC_search]
-list_paramsSearch = [sigmaD_search, sigmaC_search]
-#dict_paramSearch = {'beta': beta_search, 'sigmaD': sigmaD_search, 'sigmaC': sigmaC_search}
-dict_paramSearch = {'sigmaD': sigmaD_search, 'sigmaC': sigmaC_search}
-IC_search = np.linspace(d_fract_.loc['min'][0], d_fract_.loc['max'][0], int(d_fract_.loc['num'][0]))
-
 beta_search = np.linspace(beta_.iloc[0,0], beta_.iloc[1,0], int(beta_.iloc[2,0]))
 sigmaC_search = np.linspace(sigmaC_.iloc[0,0], sigmaC_.iloc[1,0], int(sigmaC_.iloc[2,0]))
 sigmaD_search = np.linspace(sigmaD_.iloc[0,0], sigmaD_.iloc[1,0], int(sigmaD_.iloc[2,0]))
+IC_search = np.linspace(d_fract_.loc['min'][0], d_fract_.loc['max'][0], int(d_fract_.loc['num'][0]))
 
-'''for beta_temp in tqdm(beta_search):
+#list_paramsSearch = [beta_search, sigmaD_search, sigmaC_search]
+list_paramsSearch = [sigmaD_search, sigmaC_search]
+
+#dict_paramSearch = {'beta': beta_search, 'sigmaD': sigmaD_search, 'sigmaC': sigmaC_search}
+dict_paramSearch = {'sigmaD': sigmaD_search, 'sigmaC': sigmaC_search}
+
+'''
+for beta_temp in tqdm(beta_search):
     for key_case, val_case in dict_scenarios.items():
         for idx, param in enumerate(list_params):
             graph_1D_experimentation(beta_temp, list_paramsSearch[idx], param, key_case)
