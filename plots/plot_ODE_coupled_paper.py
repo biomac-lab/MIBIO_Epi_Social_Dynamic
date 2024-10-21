@@ -47,14 +47,19 @@ color_region4 = '#5D2E8C'
 colormap_regions = np.array([color_region1, color_region2, color_region3, color_region4])
 
 #Selfcare - Public Awareness - Social Pressure - Dynamic I - Dynamic S
-dict_scenarios = {'Null':(False, False, False, True, True),
+'''dict_scenarios = {'Null':(False, False, False, True, True),
                   'SP':(False, False, True, True, True),
                   'SC':(True, False, False, True, True),
                   'PA':(False, True, False, True, True),
                   'SP+SC':(True, False, True, True, True),
                   'SP+PA':(False, True, True, True, True),
                   'PA+SC':(True, True, False, True, True),
-                  'SC+SP+PA':(True, True, True, True, True)}
+                  'SC+SP+PA':(True, True, True, True, True)}'''
+
+dict_scenarios = {'Null':(False, False, False, True, True),
+                  'SC':(True, False, False, True, True),
+                  'PA':(False, True, False, True, True),
+                  'PA+SC':(True, True, False, True, True)}
 
 dict_scenarios_simple = {'Null':(False, False, False, True, True),
                   'SC':(True, False, False, True, True),
@@ -187,7 +192,7 @@ def graph_paper_2D_experimentation(betas, param_search1, param_search2, param_na
 
 def graph_correlation(prob_infect_search, param_search1, param_search2, param_name1: str, param_name2: str, folder:str): 
     
-    fig, axes = plt.subplots(3, np.size(prob_infect_search), figsize=(14,10), sharex=True)
+    fig, axes = plt.subplots(3, np.size(prob_infect_search), figsize=(14,10))
 
     for j, beta_temp in enumerate(prob_infect_search):
         categorical_region = list()
@@ -279,12 +284,41 @@ def graph_correlation(prob_infect_search, param_search1, param_search2, param_na
         axes[1, j].set_ylabel(str_Ifinal)
         axes[1, j].set_xlim([0,1])
         axes[1, j].grid(True)
+        axes[1, j].set_xlabel(str_Cfinal)
 
-        axes[2, j].scatter(Cfinal_lst, Ioscillations_lst, color=colormap_regions[categorical_region], marker=',', alpha=0.25)
-        axes[2, j].set_xlabel(str_Cfinal)
-        axes[2, j].set_xlim([0,1])
-        axes[2, j].set_ylabel(str_Ioscillations)
-        axes[2, j].grid(True)
+        if param_name1 == 'beta':
+            str_ylabel = f'${{\\{param_name1}}}$'
+        elif param_name1 == 'sigmaD':
+            str_ylabel = f'${{\sigma_D}}$'
+        else:
+            str_ylabel = f'${{\sigma_C}}$'
+
+        if param_name2 == 'beta':
+            str_xlabel = f'${{\\{param_name2}}}$'
+        elif param_name2 == 'sigmaD':
+            str_xlabel = f'${{\sigma_D}}$'
+        else:
+            str_xlabel = f'${{\sigma_C}}$'
+
+        num_ticks = 5
+        yticks = np.linspace(0, len(param_search1) - 1, num_ticks, dtype=np.int8)
+        xticks = np.linspace(0, len(param_search2) -1, num_ticks, dtype=np.int8)
+        # the content of labels of these yticks
+        yticklabs = [param_search1[int(idx)] for idx in yticks]
+        xticklabs = [param_search2[int(idx)] for idx in xticks]
+
+        colorbar = False
+        if j == 2:
+            colorbar = True
+
+        #FINAL INFECTED
+        sns.heatmap(Cfinal_, ax=axes[2,j], cmap='PuRd', vmin=0, vmax=1, cbar=colorbar,
+                    xticklabels=xticklabs, yticklabels=yticklabs)
+        if j == 0:
+            axes[2,j].set_ylabel(f'{str_Cfinal} \n {str_ylabel}')
+        axes[2,j].set_xlabel(str_xlabel)
+        axes[2,j].set_yticks(yticks, labels=yticklabs)
+        axes[2,j].set_xticks(xticks, labels=xticklabs)
                 
     fig.tight_layout()
 

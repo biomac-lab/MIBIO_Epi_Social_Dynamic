@@ -42,14 +42,19 @@ dict_scenarios = {'Null':(False, False, False, True, True),
 '''
                     
 #Selfcare - Public Awareness - Social Pressure - Dynamic I - Dynamic S
-dict_scenarios = {'Null':(False, False, False, True, True),
+'''dict_scenarios = {'Null':(False, False, False, True, True),
                   'SP':(False, False, True, True, True),
                   'SC':(True, False, False, True, True),
                   'PA':(False, True, False, True, True),
                   'SP+SC':(True, False, True, True, True),
                   'SP+PA':(False, True, True, True, True),
                   'PA+SC':(True, True, False, True, True),
-                  'SC+SP+PA':(True, True, True, True, True)}
+                  'SC+SP+PA':(True, True, True, True, True)}'''
+
+dict_scenarios = {'Null':(False, False, False, True, True),
+                  'SC':(True, False, False, True, True),
+                  'PA':(False, True, False, True, True),
+                  'PA+SC':(True, True, False, True, True)}
 
 def SIS_coupled(variables, t, beta_max, alpha, gamma, A, sigmaD, sigmaC, 
                 selfcare:bool=True, public_awareness:bool=True, social_pressure:bool=True, dynamic_I:bool= True, dynamic_S:bool=True):
