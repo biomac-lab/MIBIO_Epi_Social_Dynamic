@@ -427,8 +427,6 @@ def graph_bars_diff(prob_infect_search):
         sns.histplot(df_temp, x='diff_Iosc', hue='Model', fill=True, ax=axes[2,b_idx])
         axes[2,b_idx].set_xlabel(f'{str_Delta} {str_Ioscillations}')
         
-        
-
     fig.tight_layout()
 
     if not os.path.isdir( os.path.join(plots_path, 'paper') ):
@@ -437,6 +435,38 @@ def graph_bars_diff(prob_infect_search):
     plt.savefig(os.path.join(plots_path, 'paper', f'fig3_bchrt (beta={prob_infect_search[0]}->{prob_infect_search[-1]}).jpeg'), dpi=400)
     plt.close()
 
+def graph_boxplot_diff(prob_infect_search):
+    fig, axes = plt.subplots(3, np.size(prob_infect_search), figsize=(18, 10))
+
+    for b_idx, beta_temp in enumerate(prob_infect_search):
+        path_to_results = os.path.join(results_path, 'Diff', f'Diff_NullAddition_beta_{beta_temp:.2f}.csv')
+        
+        try:
+            df_temp = pd.read_csv(path_to_results, index_col=0)
+        except FileNotFoundError:
+            print(f"File not found: {path_to_results}")
+            continue  # Skip this iteration if the file is not found
+
+        # Boxplot for diff_Imax
+        sns.boxplot(x='Model', y='diff_Imax', data=df_temp, ax=axes[0, b_idx])
+        axes[0, b_idx].set_title(f'{str_beta} = {beta_temp}')
+        axes[0, b_idx].set_xlabel(f'{str_Delta} {str_Imax}')
+        
+        # Boxplot for diff_Ifinal
+        sns.boxplot(x='Model', y='diff_Ifinal', data=df_temp, ax=axes[1, b_idx])
+        axes[1, b_idx].set_xlabel(f'{str_Delta} {str_Ifinal}')
+        
+        # Boxplot for diff_Iosc
+        sns.boxplot(x='Model', y='diff_Iosc', data=df_temp, ax=axes[2, b_idx])
+        axes[2, b_idx].set_xlabel(f'{str_Delta} {str_Ioscillations}')
+        
+    fig.tight_layout()
+
+    if not os.path.isdir(os.path.join(plots_path, 'paper')):
+        os.makedirs(os.path.join(plots_path, 'paper'))
+
+    plt.savefig(os.path.join(plots_path, 'paper', f'fig4_bxplt (beta={prob_infect_search[0]}->{prob_infect_search[-1]}).jpeg'), dpi=400)
+    plt.close()
         
 
 phenomena = ['PA','SC']
@@ -455,9 +485,10 @@ for beta_temp in tqdm(beta_search):
 print('DONE COMPARISON OF MODELS')
 
 
-for key_case, val_case in dict_scenarios.items():
+'''for key_case, val_case in dict_scenarios.items():
     graph_paper_2D_experimentation(beta_search, sigmaD_search, sigmaC_search, 'sigmaD', 'sigmaC', key_case)
     graph_correlation(beta_search, sigmaD_search, sigmaC_search, 'sigmaD', 'sigmaC', key_case)
-
+'''
 graph_bars_diff(beta_search)
+graph_boxplot_diff(beta_search)
     
