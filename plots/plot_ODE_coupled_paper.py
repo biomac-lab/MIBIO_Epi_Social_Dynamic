@@ -342,23 +342,48 @@ def compareModels_2D_experimentation(prob_infect, folder1:str, folder2:str, para
     Ioscillations_2 = np.copy(Imax_2)
     Coscillations_2 = np.copy(Imax_2)
 
+    categorical_region = list()
+
     for idx1, p1 in enumerate(param_search1):
         for idx2, p2 in enumerate(param_search2):
+
             if param_name1 == 'beta':
                 if param_name2 == 'sigmaD':
+                    sigmaD_temp = p2
+                    sigmaC_temp = 0.5
                     str_file = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_0.50'.format(p1, p2)
                 else:
+                    sigmaD_temp = 0.5
+                    sigmaC_temp = p2
                     str_file = 'ode_coupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_{:0.2f}'.format(p1, p2)
             elif param_name1 == 'sigmaD':
                 if param_name2 == 'beta':
+                    sigmaD_temp = p1
+                    sigmaC_temp = 0.5
                     str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_0.50'.format(p2, p1)
                 else:
+                    sigmaD_temp = p1
+                    sigmaC_temp = p2
                     str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(prob_infect,p1, p2)
             elif param_name1 == 'sigmaC':
                 if param_name2 == 'beta':
+                    sigmaD_temp = 0.5
+                    sigmaC_temp = p1
                     str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_0.50_sigmaC_{:0.2f}'.format(p2, p1)
                 else:
+                    sigmaD_temp = p2
+                    sigmaC_temp = p1
                     str_file  = 'ode_coupled_beta_{:0.2f}_sigmaD_{:0.2f}_sigmaC_{:0.2f}'.format(prob_infect,p2, p1)
+
+            if sigmaC_temp < 0.5 and sigmaD_temp < 0.5: 
+                categorical_region.append(0)
+            elif sigmaC_temp >= 0.5 and sigmaD_temp < 0.5:
+                categorical_region.append(1)  
+            elif sigmaC_temp < 0.5 and sigmaD_temp >= 0.5:
+                categorical_region.append(2) 
+            elif sigmaC_temp >= 0.5 and sigmaD_temp >= 0.5:
+                categorical_region.append(3)
+
 
             path_to_results1 = os.path.join(results_path, '2D', folder1,str_file+'.csv')
             df_temp1 = pd.read_csv(path_to_results1, index_col=0)
@@ -401,6 +426,7 @@ def compareModels_2D_experimentation(prob_infect, folder1:str, folder2:str, para
     df_temp['diff_Cfinal'] = MD_Cfinal
     df_temp['diff_Iosc'] = MD_Iosc
     df_temp['diff_Cosc'] = MD_Cosc
+    df_temp['Category'] = categorical_region
 
 
     df_temp['Model'] = [f'{folder2}']*len(df_temp)
@@ -467,8 +493,42 @@ def graph_boxplot_diff(prob_infect_search):
 
     plt.savefig(os.path.join(plots_path, 'paper', f'fig4_bxplt (beta={prob_infect_search[0]}->{prob_infect_search[-1]}).jpeg'), dpi=400)
     plt.close()
-        
 
+def graph_violin_diff(prob_infect_search):
+    fig, axes = plt.subplots(3, np.size(prob_infect_search), figsize=(18, 10))
+
+    for b_idx, beta_temp in enumerate(prob_infect_search):
+        path_to_results = os.path.join(results_path, 'Diff', f'Diff_NullAddition_beta_{beta_temp:.2f}.csv')
+        
+        try:
+            df_temp = pd.read_csv(path_to_results, index_col=0)
+        except FileNotFoundError:
+            print(f"File not found: {path_to_results}")
+            continue  # Skip this iteration if the file is not found
+
+        # Violin plot for diff_Imax
+        sns.violinplot(x='Model', y='diff_Imax', hue='Category', data=df_temp, ax=axes[0, b_idx])
+        axes[0, b_idx].set_title(f'{str_beta} = {beta_temp}')
+        axes[0, b_idx].set_xlabel(f'{str_Delta} {str_Imax}')
+        
+        # Violin plot for diff_Ifinal
+        sns.violinplot(x='Model', y='diff_Ifinal', hue='Category', data=df_temp, ax=axes[1, b_idx])
+        axes[1, b_idx].set_xlabel(f'{str_Delta} {str_Ifinal}')
+        
+        # Violin plot for diff_Iosc
+        sns.violinplot(x='Model', y='diff_Iosc', hue='Category', data=df_temp, ax=axes[2, b_idx])
+        axes[2, b_idx].set_xlabel(f'{str_Delta} {str_Ioscillations}')
+        axes[2, b_idx].legend(title="Category", loc='upper right')
+
+        
+    fig.tight_layout()
+
+    if not os.path.isdir(os.path.join(plots_path, 'paper')):
+        os.makedirs(os.path.join(plots_path, 'paper'))
+
+    plt.savefig(os.path.join(plots_path, 'paper', f'fig5_vlnplt (beta={prob_infect_search[0]}->{prob_infect_search[-1]}).jpeg'), dpi=400)
+    plt.close()    
+'''
 phenomena = ['PA','SC']
 for beta_temp in tqdm(beta_search):
     diff_df = pd.DataFrame(columns=['Model', 'diff_Imax', 'diff_Tmax', 'diff_Ifinal', 'diff_Cfinal', 'diff_Iosc', 'diff_Cosc'])
@@ -484,11 +544,13 @@ for beta_temp in tqdm(beta_search):
 
 print('DONE COMPARISON OF MODELS')
 
-
+'''
 '''for key_case, val_case in dict_scenarios.items():
     graph_paper_2D_experimentation(beta_search, sigmaD_search, sigmaC_search, 'sigmaD', 'sigmaC', key_case)
     graph_correlation(beta_search, sigmaD_search, sigmaC_search, 'sigmaD', 'sigmaC', key_case)
 '''
-graph_bars_diff(beta_search)
-graph_boxplot_diff(beta_search)
+
+#graph_bars_diff(beta_search)
+#graph_boxplot_diff(beta_search)
+graph_violin_diff(beta_search)
     
