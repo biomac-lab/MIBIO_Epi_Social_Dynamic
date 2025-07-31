@@ -7,51 +7,27 @@
     pandas
     numpy
     scipy
-    networkx
-    python-louvian 
 
 ## Setup
 1. Make sure to have dependencies installed
-2. Clone our repository `https://github.com/biomac-lab/Epidemiology_behavior_dynamics.git`
-3. Create networks
+2. Clone our repository `MIBIO_Epi_Social_Dynamic`
 4. Simulate (may take a lot of time!)
 5. Generate figures
 
 ## Usage
 
-### Creation of networks using *networkx*
 
 
 ### Run simulations
 
+#### ODE Simulations
 
-
-##### For running simulations over a scale-free network with 1000 nodes in both information transmission scheme (as shown in the paper)
-
-##### For running simulations over a scale-free network with 5000 nodes in both infomation transmission scheme (as shown in the paper)
-
- 
-##### For running simulations over a small-world and grid network with 1000 nodes in both infomation transmission scheme (as shown in the paper)
-
-
-##### For running simulations over a ODE (as shown in the paper)
-
-
-#### Simulation for cluster analysis
-
-
-##### For for saving the checkpoint of the simulations executed over a scale-free network with 5000 nodes in both infomation transmission scheme (as shown in the paper)
 
 ### Figures generation
 
-#### Networks visualization
+#### Heatmaps
 
+#### Violin plots
 
-#### Heatmaps visualization
-
-
-#### Disease and behavior dynamics over networks
-
-
-#### Clustered dynamics over a scale-free network
+#### Histograms
 
