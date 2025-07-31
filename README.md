@@ -20,8 +20,9 @@
 
 ### Run simulations
 
-#### ODE Simulations
+#### ODE Simulations (Decoupled diseases stages from behavioral attitudes)
 
+#### ODE Simulations (Coupled disease stages with behavioral attitudes)
 
 ### Figures generation
 
